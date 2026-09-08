@@ -1,0 +1,26 @@
+{
+  "phase": "after",
+  "capturedAt": "2026-09-07T03:03:09.933Z",
+  "observations": [
+    {
+      "operation": "スペース3文字を入力して追加",
+      "input": "   ",
+      "error": 1,
+      "emptyRows": 0,
+      "text": "My tasks\n学習者の実装エリア\n\nタスク名を入力してください。空白だけでは追加できません。\n\nタスク名\n追加\n\nタスクはまだありません。名前を入力して追加してみましょう。"
+    },
+    {
+      "operation": "前後空白ありのReactを学ぶ→Vitestで確かめるを追加",
+      "input": "",
+      "rows": [
+        "Reactを学ぶ",
+        "Vitestで確かめる"
+      ],
+      "text": "My tasks\n学習者の実装エリア\nタスク名\n追加\nReactを学ぶ\nVitestで確かめる"
+    },
+    {
+      "operation": "390px幅でガイドを開く",
+      "horizontalOverflow": false
+    }
+  ]
+}

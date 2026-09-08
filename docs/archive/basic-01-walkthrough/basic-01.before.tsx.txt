@@ -1,0 +1,50 @@
+import { useState } from 'react';
+
+/**
+ * あなたの実装場所。課題を一つずつ、このコンポーネントに追加してください。
+ * TODO: 基礎の追加・一覧 → 完了 → 編集・削除 → 検索 → 期限 → API連携。
+ * このファイルを保存すると、右側のプレビューに反映されます。
+ * UIで確認した後、同じフォルダに TaskWorkspace.test.tsx を作成してください。
+ */
+
+type TaskList = {
+  id: string;
+  title: string;
+};
+export default function TaskWorkspace() {
+  const handleAddButton = () => {
+    if (!userInputTask) return setErrorMessage('入力がありませんでした。');
+    const trimText = userInputTask.trim();
+    setTaskList([...taskList, { id: crypto.randomUUID(), title: trimText }]);
+    setUserInputTask('');
+    setErrorMessage('');
+  };
+  const [userInputTask, setUserInputTask] = useState<string>('');
+  const [errorMessage, setErrorMessage] = useState<string>('');
+  const [taskList, setTaskList] = useState<TaskList[]>([]);
+
+  return (
+    <section className="task-workspace" aria-label="タスク管理プレビュー">
+      <div className="workspace-toolbar">
+        <strong>My tasks</strong>
+        <span className="badge">学習者の実装エリア</span>
+      </div>
+      <span style={{ color: 'red' }}>{errorMessage}</span>
+      <label htmlFor="task-title">タスク名</label>
+      <div className="input-row">
+        <input
+          id="task-title"
+          placeholder="ここから、最初の機能をつくろう"
+          onChange={(e) => setUserInputTask(e.target.value)}
+          value={userInputTask}
+        />
+        <button onClick={handleAddButton}>追加</button>
+      </div>
+      <div className="empty-state">
+        {taskList.map((obj) => (
+          <div key={obj.id}>{obj.title}</div>
+        ))}
+      </div>
+    </section>
+  );
+}
