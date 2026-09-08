@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 /**
  * あなたの実装場所。課題を一つずつ、このコンポーネントに追加してください。
@@ -12,7 +12,18 @@ type TaskList = {
   id: string;
   title: string;
 };
+
+const data = localStorage.getItem('taskList');
+const localTaskList = data ? JSON.parse(data) : [];
+
 export default function Chapters() {
+  const [userInputTask, setUserInputTask] = useState<string>('');
+  const [userEditInput, setUserEditInput] = useState<string>('');
+  const [errorMessage, setErrorMessage] = useState<string>('');
+  const [targetId, setTargetId] = useState<string>();
+  const [taskList, setTaskList] = useState<TaskList[]>(localTaskList);
+  const prevEditInputRef = useRef<string>('');
+
   const handleAddButton = () => {
     const trimText = userInputTask.trim();
     if (!trimText)
@@ -24,10 +35,59 @@ export default function Chapters() {
     setUserInputTask('');
     setErrorMessage('');
   };
-  const [userInputTask, setUserInputTask] = useState<string>('');
-  const [errorMessage, setErrorMessage] = useState<string>('');
-  const [targetIndex, setTargetIndex] = useState<number>();
-  const [taskList, setTaskList] = useState<TaskList[]>([]);
+  const handelSaveButton = () => {
+    if (!userEditInput.trim())
+      return setErrorMessage(
+        '新しいタスク名を入力してください。空白だけでは編集できません。',
+      );
+
+    const targetExists = taskList.some((task) => task.id === targetId);
+    if (!targetExists) return setErrorMessage('該当するデータが存在しません。');
+
+    setTaskList(
+      taskList.map((task) =>
+        task.id === targetId ? { ...task, title: userEditInput.trim() } : task,
+      ),
+    );
+    setTargetId('');
+    setUserEditInput('');
+    setErrorMessage('');
+  };
+  const handelDeleteButton = () => {
+    const targetDataExists = taskList.some((obj) => obj.id === targetId);
+    if (!targetDataExists)
+      return setErrorMessage('該当するデータが存在しません。');
+
+    const targetTaskTitle = userEditInput
+      ? userEditInput
+      : taskList.find((obj) => obj.id === targetId)?.title;
+    const confirm = window.confirm(
+      targetTaskTitle + 'を削除してよろしいですか？',
+    );
+    if (!confirm) return;
+    setTaskList(taskList.filter((obj) => obj.id !== targetId));
+    setTargetId('');
+  };
+  const handleCardClick = (currenttargetId: string) => {
+    const targetDataTitle = taskList.find(
+      (obj) => obj.id === currenttargetId,
+    )?.title;
+    if (!targetDataTitle) return;
+
+    setTaskList((prev) =>
+      prev.map((obj) =>
+        obj.id === targetId ? { ...obj, title: prevEditInputRef.current } : obj,
+      ),
+    );
+    setUserEditInput(targetDataTitle);
+    setTargetId(currenttargetId);
+  };
+  /* targetIndexを0にする */
+  const handleCancelButton = () => {};
+
+  useEffect(() => {
+    localStorage.setItem('taskList', JSON.stringify(taskList));
+  }, [taskList, setTaskList]);
 
   return (
     <section className="task-workspace" aria-label="タスク管理プレビュー">
@@ -47,7 +107,15 @@ export default function Chapters() {
             id="task-title"
             role="textbox"
             placeholder="ここから、最初の機能をつくろう"
-            onChange={(e) => setUserInputTask(e.target.value)}
+            onChange={(e) => setUserInputTask(e.target.value.trim())}
+            onFocus={() => {
+              setTaskList((prev) =>
+                prev.map((obj) =>
+                  obj.id === targetId ? { ...obj, title: userEditInput } : obj,
+                ),
+              );
+              setTargetId('');
+            }}
             value={userInputTask}
             aria-invalid={Boolean(errorMessage)}
             aria-label="input"
@@ -64,17 +132,70 @@ export default function Chapters() {
         </p>
       ) : (
         <ul>
-          {taskList.map((obj, index) => (
-            <li
-              role="listitem"
-              aria-current={targetIndex === index ? true : undefined}
-              data-test-id={obj.id}
-              onClick={() => setTargetIndex(index)}
-              key={obj.id}
-            >
-              {obj.title}
-            </li>
-          ))}
+          {taskList.map((obj) =>
+            targetId === obj.id ? (
+              <div
+                style={{
+                  justifyContent: 'center',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                }}
+                key={obj.id}
+              >
+                <input
+                  type="text"
+                  role="textbox"
+                  aria-label="editInput"
+                  placeholder={obj.title}
+                  value={userEditInput}
+                  onChange={(e) => {
+                    setUserEditInput(e.target.value.trim());
+                    prevEditInputRef.current = userEditInput.trim();
+                  }}
+                />
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    gap: 5,
+                  }}
+                >
+                  <button
+                    role="button"
+                    aria-label="editCancelButton"
+                    onClick={handleCancelButton}
+                  >
+                    ◀️
+                  </button>
+                  <button
+                    role="button"
+                    aria-label="editSaveButton"
+                    onClick={handelSaveButton}
+                  >
+                    💾
+                  </button>
+                  <button
+                    role="button"
+                    aria-label="editDeleteButton"
+                    onClick={handelDeleteButton}
+                  >
+                    🗑️
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <li
+                role="listitem"
+                data-test-id={obj.id}
+                onClick={() => handleCardClick(obj.id)}
+                key={obj.id}
+              >
+                {obj.title}
+              </li>
+            ),
+          )}
         </ul>
       )}
     </section>
