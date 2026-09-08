@@ -68,3 +68,57 @@
 .requirements .edit-location{margin-top:16px;padding-top:14px;border-top:1px solid #d9e5ca}
 .requirements .edit-location h4{font-size:11px;color:#557046;margin:0 0 8px}
 .requirements .edit-location>code{background:#ffffffb3;border-color:#d9e5ca;overflow-wrap:anywhere}
+
+/* Difficulty colors stay scoped to the sidebar. */
+.sidebar .level-group {
+  --level-accent: #286344;
+  --level-text: #355744;
+  --level-muted: #587461;
+  --level-surface: #f0f7f1;
+  --level-hover: #e4f0e7;
+  --level-selected: #d3e8da;
+  --level-border: #bdd7c5;
+  padding: 12px 8px;
+  border: 1px solid var(--level-border);
+  border-left: 3px solid var(--level-accent);
+  border-radius: 10px;
+  background: var(--level-surface);
+}
+.sidebar .level-group[data-level="intermediate"] {
+  --level-accent: #285da3;
+  --level-text: #354f73;
+  --level-muted: #526e91;
+  --level-surface: #f0f5fc;
+  --level-hover: #e3edfa;
+  --level-selected: #d2e2f7;
+  --level-border: #bed1eb;
+}
+.sidebar .level-group[data-level="nightmare"] {
+  --level-accent: #76409a;
+  --level-text: #644575;
+  --level-muted: #7d608c;
+  --level-surface: #f8f2fb;
+  --level-hover: #efe2f6;
+  --level-selected: #e7d4f1;
+  --level-border: #d9c1e7;
+}
+.sidebar .level-heading { padding: 0 3px; }
+.sidebar .level-heading h3,
+.sidebar .level-heading > span { color: var(--level-accent); }
+.sidebar .level-heading small,
+.sidebar .level-group .lesson-number { color: var(--level-muted); }
+.sidebar .level-group .lesson-link { color: var(--level-text); }
+.sidebar .level-group .lesson-link:hover { background: var(--level-hover); }
+.sidebar .level-group .lesson-link.active {
+  background: var(--level-selected);
+  color: var(--level-accent);
+  box-shadow: inset 3px 0 var(--level-accent);
+}
+.sidebar .level-group .lesson-link:focus-visible {
+  outline: 2px solid var(--level-accent);
+  outline-offset: 2px;
+}
+.sidebar .level-group .completion-badge {
+  background: var(--level-selected);
+  color: var(--level-accent);
+}

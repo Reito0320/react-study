@@ -93,3 +93,16 @@ it('resumes the selected chapter after remount and falls back for an unknown cha
   render(<App />)
   expect(screen.getByRole('heading', { name: 'カウンターで、学び方をひと回り。' })).toBeVisible()
 })
+
+
+it('opens the Prisma chapters and preserves existing progress', async () => {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({ 'basic-02': 4 }))
+  const user = userEvent.setup()
+  render(<App />)
+  await user.click(screen.getByRole('button', { name: /PostgreSQLとPrismaをローカルで起動/ }))
+  await waitFor(() => expect(screen.getByRole('heading', { name: 'PostgreSQL・Prisma学習ガイド' })).toBeVisible())
+  expect(screen.getByText('npm run db:apply')).toBeVisible()
+  await user.click(screen.getByRole('button', { name: /Prismaのモックテストを書く/ }))
+  await waitFor(() => expect(screen.getByRole('heading', { name: 'Prismaのモックテストを書く' })).toBeVisible())
+  expect(screen.getByRole('button', { name: /編集と削除を実装/ })).toHaveTextContent('完了')
+})

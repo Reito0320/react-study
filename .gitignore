@@ -55,3 +55,6 @@ temp/
 .codex/
 .claude/
 /docs/walkthrough/chapter-00/notion-pending.md
+
+# Generated Prisma client
+/generated/prisma/

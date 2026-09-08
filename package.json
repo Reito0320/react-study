@@ -13,11 +13,23 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "test:learning": "tsx scripts/test-learning.ts"
+    "test:learning": "tsx scripts/test-learning.ts",
+    "postinstall": "prisma generate",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:studio": "prisma studio --browser none",
+    "db:check": "tsx scripts/db-check.ts",
+    "db:demo": "tsx scripts/db-demo.ts",
+    "test:prisma": "vitest run server/prisma.test.ts",
+    "db:apply": "prisma migrate deploy"
   },
   "dependencies": {
+    "@prisma/adapter-pg": "^7.10.0",
+    "@prisma/client": "^7.10.0",
+    "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "motion": "^13.2.0",
+    "pg": "^8.23.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
   },
@@ -29,6 +41,7 @@
     "@testing-library/user-event": "^14.6.7",
     "@types/express": "^5.0.6",
     "@types/node": "^24.13.3",
+    "@types/pg": "^8.23.1",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
     "@vitejs/plugin-react": "^6.1.0",
@@ -38,10 +51,12 @@
     "eslint-plugin-react-refresh": "^0.5.4",
     "globals": "^17.11.0",
     "jsdom": "^30.0.1",
+    "prisma": "^7.10.0",
     "tsx": "^4.23.13",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.67.0",
     "vite": "^8.2.2",
-    "vitest": "^5.0.0"
+    "vitest": "^5.0.0",
+    "vitest-mock-extended": "^5.1.1"
   }
 }

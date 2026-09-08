@@ -24,7 +24,7 @@ try {
   try { results = await readResults(); } catch { results = { version: 1 as const, runs: {} }; }
   for (const id of ids) results.runs[id] = { state: 'running', startedAt, fingerprint: hash, assertions: [] };
   await writeResults(results);
-  const args = ['node_modules/vitest/vitest.mjs', 'run', 'src/exercises', 'server/exercises.test.ts', '--reporter=default', '--reporter=json', `--outputFile.json=${rawPath}`];
+  const args = ['node_modules/vitest/vitest.mjs', 'run', 'src/exercises', 'server/exercises.test.ts', 'server/prisma.test.ts', '--reporter=default', '--reporter=json', `--outputFile.json=${rawPath}`];
   if (lessonId) args.push('-t', `\\[${lessonId}\\]`);
   const code = await new Promise<number>(resolveCode => {
     const child = spawn(process.execPath, args, { cwd: projectRoot, stdio: 'inherit' });

@@ -69,6 +69,12 @@ export const lessons: Lesson[] = [
     testHints: ['UI確認後、APIの成功応答と存在しないIDをVitestで検証する。', 'UIテストでは通信を制御し、loading→成功とloading→失敗を確認する。'], reference: refs.effect,
   },
   {
+    id: 'basic-07', level: 'basic', title: 'PostgreSQLとPrismaをローカルで起動', summary: 'ローカルに教材用DBを作り、Prismaで保存・取得する。', hooks: ['PostgreSQL', 'Prisma', 'マイグレーション'], file: 'prisma/schema.prisma + server/db/practice-service.ts',
+    requirements: ['既存のローカルPostgreSQLに教材専用DBを作り、.envを接続先に合わせる。', 'npm run db:apply → npm run db:generate → npm run db:checkの順に保存と取得を確認する。', 'npm run db:demoでタスクを保存し、再実行して同じIDとタイトルを取得する。'],
+    checks: ['直接インストールしたPostgreSQLで保存・再取得でき、Prisma StudioでPracticeTaskを確認できる。', 'プログラムを終了しても保存したタスクを同じIDで再取得できる。'],
+    testHints: ['提供済みのURL検証と実DBへの疎通確認は別の検証。', 'mockテストの成功だけではマイグレーションや保存の成功は確認できない。'], reference: refs.middleware,
+  },
+  {
     id: 'intermediate-01', level: 'intermediate', title: '状態遷移をreducerに整理', summary: '追加・編集・削除・完了のルールを集約する。', hooks: ['useReducer'], file: workspace,
     requirements: ['既存のタスク操作をactionとして定義する。', 'reducerは副作用を持たず、入力のstateを変更しない。', '操作の見た目と結果を維持する。'],
     checks: ['基礎のすべての操作が同じ結果になる。', '存在しないIDへの操作でも他のタスクは変化しない。'],
@@ -103,6 +109,12 @@ export const lessons: Lesson[] = [
     requirements: ['JSON解析→入力検証→ルート→共通エラー処理の順を整理する。', '不正入力は400、未知のIDは404を返す。', 'エラー応答の形式を統一し、UIに説明を表示する。'],
     checks: ['空白タイトルの送信は400になり、一覧に追加されない。', '未知のIDを操作すると404の説明が表示される。'],
     testHints: ['不正なJSON・入力・未知IDの応答をAPIテストで検証する。', 'レスポンスが一度だけ送られ、後続処理に進まないことを確認する。'], reference: refs.middleware,
+  },
+  {
+    id: 'intermediate-07', level: 'intermediate', title: 'Prismaのモックテストを書く', summary: 'DBなしで成功・不正入力・通信失敗を再現し、保存処理の責務を学ぶ。', hooks: ['Vitest', 'Prisma', 'mockResolvedValue', 'mockRejectedValue'], file: 'server/prisma.test.ts + server/db/practice-service.ts',
+    requirements: ['基礎7の実DB確認後、server/prisma.test.tsの参考例を読む。', '実PrismaClientの代わりに型付きモックをサービスへ渡す仕組みを説明する。', '一覧取得の正常系と異常系のit.todoを実装する。'],
+    checks: ['DBを停止してもnpm run test:prismaが実行できる。', '引数・戻り値・エラーを検証し、モックを呼んだだけで成功にしない。'],
+    testHints: ['mockResolvedValueで2件を返し、orderByと返り値を検証する。', 'mockRejectedValueとrejectsで一覧取得失敗を検証する。beforeEachでモックを初期化する。'], reference: refs.async,
   },
   {
     id: 'nightmare-01', level: 'nightmare', title: '削除をUndoできるようにする', summary: '履歴と非同期保存を含む状態遷移を設計する。', hooks: ['useReducer', 'useRef', 'useEffect'], file: server,

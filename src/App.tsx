@@ -55,7 +55,7 @@ function App() {
         <div className="eyebrow">YOUR LEARNING PATH</div><h2>小さくつくる。<br />深くわかる。</h2><p className="muted">React / Express / Testing</p>
         <div className="course-progress"><span>学習の進捗</span><strong>{completed}<small> / {lessons.length}</small></strong><progress value={completed} max={lessons.length} aria-label="完了した課題" /></div>
         <button className={`lesson-link intro-link ${selected === 'chapter-00' ? 'active' : ''}`} aria-current={selected === 'chapter-00' ? 'page' : undefined} onClick={() => setSelected('chapter-00')}>00 はじめに：カウンターで実演{progress['chapter-00'] === 4 && <span className="completion-badge">✓ 完了</span>}</button>
-        <nav aria-label="課題一覧">{levels.map((level, index) => <section className="level-group" key={level.id}>
+        <nav aria-label="課題一覧">{levels.map((level, index) => <section className="level-group" data-level={level.id} key={level.id}>
           <div className="level-heading"><span>0{index + 1}</span><div><h3>{level.name}</h3><small>{level.description}</small></div></div>
           {lessons.filter(l => l.level === level.id).map((l, i) => <button key={l.id} className={`lesson-link ${selected === l.id ? 'active' : ''} ${progress[l.id] === 4 ? 'completed' : ''}`} aria-current={selected === l.id ? 'step' : undefined} onClick={() => setSelected(l.id)}><span className="lesson-number">{String(i + 1).padStart(2, '0')}</span><span>{l.title}</span>{progress[l.id] === 4 && <span className="completion-badge">✓ 完了</span>}<span aria-hidden="true">{selected === l.id ? '↗' : ''}</span></button>)}
         </section>)}</nav>
