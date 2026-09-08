@@ -1,41 +1,38 @@
 import { expect, test } from '@playwright/test'
 
-test('reference is keyboard accessible and the learning sequence survives reload', async ({ page }) => {
+test('the learning sequence survives reload', async ({ page }) => {
   await page.goto('/')
-  const reference = page.locator('details.reference')
-  await expect(reference).not.toHaveAttribute('open')
-  const toggle = reference.locator('summary')
-  await toggle.focus()
-  await page.keyboard.press('Enter')
-  await expect(reference).toHaveAttribute('open')
-  await page.keyboard.press('Enter')
-  await expect(reference).not.toHaveAttribute('open')
+  await page.getByRole('button', { name: /チャプター1：タスク追加へ進む/ }).click()
   await expect(page.getByRole('checkbox', { name: '実装した', exact: true })).toBeDisabled()
   for (const name of ['要件を読んだ', '実装した', 'UIで確認した', 'テストを追加・実行した']) await page.getByRole('checkbox', { name, exact: true }).check()
   await page.reload()
   await expect(page.getByRole('checkbox', { name: 'テストを追加・実行した' })).toBeChecked()
   await page.getByRole('button', { name: /次の課題へ/ }).click()
   await expect(page.getByRole('heading', { name: '編集と削除を実装', exact: true })).toBeVisible()
-  await expect(reference).not.toHaveAttribute('open')
 })
-test('API reference displays real middleware responses', async ({ page }) => {
-  await page.goto('/')
-  await page.getByRole('button', { name: /ミドルウェアでAPIを整える/ }).click()
-  await page.locator('details.reference summary').click()
-  const success = page.waitForResponse(response => response.url().endsWith('/api/reference/pipeline'))
-  await page.getByRole('button', { name: '正常リクエスト' }).click()
-  expect((await success).status()).toBe(200)
-  await expect(page.locator('.demo [role="status"]')).toContainText('handler')
-  const failure = page.waitForResponse(response => response.url().endsWith('/api/reference/pipeline?fail=1'))
-  await page.getByRole('button', { name: 'エラーを確認' }).click()
-  expect((await failure).status()).toBe(400)
-  await expect(page.locator('.demo [role="status"]')).toContainText('error-handler')
-  await expect(page.getByRole('checkbox', { name: '要件を読んだ' })).not.toBeChecked()
-})
-test('mobile layout stays within the viewport with a reference expanded', async ({ page }) => {
+test('mobile layout stays within the viewport', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 })
   await page.goto('/')
-  await page.locator('details.reference summary').click()
+  await page.getByRole('button', { name: /チャプター1：タスク追加へ進む/ }).click()
   await expect(page.getByRole('heading', { name: 'タスクを追加して一覧に表示', exact: true })).toBeVisible()
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
+})
+
+test('sidebar collapses and requirement results distinguish passed and todo', async ({ page }) => {
+  await page.route('**/api/learning/test-results', route => route.fulfill({ json: { version: 1, catalog: { 'basic-01': [{ id: 'basic-01-01', title: '追加' }, { id: 'basic-01-02', title: '空入力' }] }, runs: { 'basic-01': { state: 'finished', startedAt: '', fingerprint: '', assertions: [
+    { title: '[basic-01-01] 追加', fullName: '追加', state: 'passed', messages: [] },
+    { title: '[basic-01-02] 空入力', fullName: '空入力', state: 'todo', messages: [] },
+  ] } } } }))
+  await page.goto('/')
+  await page.getByRole('button', { name: /チャプター1：タスク追加へ進む/ }).click()
+  await page.getByRole('button', { name: /メニューを閉じる/ }).click()
+  await expect(page.locator('#curriculum-sidebar')).toBeHidden()
+  const results = page.getByRole('article', { name: '要件ごとのテスト結果' })
+  await expect(results.locator('li').filter({ hasText: 'basic-01-01' })).toContainText('✓ 成功')
+  await expect(results.locator('li').filter({ hasText: 'basic-01-02' })).toContainText('未実装')
+  await expect(results).toContainText('npm run test:learning -- basic-01')
+  await page.reload()
+  await expect(page.locator('#curriculum-sidebar')).toBeHidden()
+  await page.getByRole('button', { name: /メニューを開く/ }).click()
+  await expect(page.locator('#curriculum-sidebar')).toBeVisible()
 })

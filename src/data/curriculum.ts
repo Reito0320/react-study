@@ -17,8 +17,8 @@ export interface Lesson {
   }
 }
 
-const workspace = 'src/exercises/TaskWorkspace.tsx'
-const server = 'server/exercises.ts + src/exercises/TaskWorkspace.tsx'
+const workspace = 'src/exercises/chapters.tsx'
+const server = 'server/exercises.ts + src/exercises/chapters.tsx'
 const refs: Record<string, Lesson['reference']> = {
   state: { title: 'useState — UIと状態', explanation: '状態の更新は次の描画につながります。直前の値に依存する更新には関数形式を使います。配列やオブジェクトは新しく作ります。', code: 'const [count, setCount] = useState(0)\n<button onClick={() => setCount(n => n + 1)}>{count}</button>', demo: 'state' },
   effect: { title: 'useEffect — 外部との同期', explanation: 'Effectは通信やタイマーなど外部との同期に使います。表示値の計算だけならレンダー中に行い、不要なEffectを増やしません。終了時は後始末をします。', code: 'useEffect(() => {\n  const timer = setInterval(() => setSeconds(s => s + 1), 1000)\n  return () => clearInterval(timer)\n}, [])', demo: 'effect' },

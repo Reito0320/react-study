@@ -1,4 +1,5 @@
 import express from 'express'
+import { currentResults } from './learning-results.ts'
 import type { ErrorRequestHandler } from 'express'
 import { createExerciseRouter } from './exercises.ts'
 import { createReferenceRouter, pipelineResult, ReferenceError } from './reference.ts'
@@ -11,6 +12,11 @@ export function createApp() {
   app.get('/api/health', (_, response) => {
     response.json({ ok: true })
   })
+  app.get('/api/learning/test-results', async (_, response) => {
+    response.setHeader('Cache-Control', 'no-store');
+    try { response.json(await currentResults()); }
+    catch (error) { response.status(500).json({ error: 'RESULTS_UNAVAILABLE', message: error instanceof Error ? `テスト項目または結果を取得できません。${error.message}` : 'テスト項目または結果を取得できません。' }); }
+  });
   app.use('/api/reference', createReferenceRouter())
   app.use('/api/tasks', createExerciseRouter())
   app.use((_, response) => {

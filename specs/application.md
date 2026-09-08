@@ -51,3 +51,12 @@ Vitest + Testing Libraryで教材UIと進捗制御、VitestでAPI、Playwright�
 ## 言語
 
 React・Express・課題・参考コード・テストはすべてTypeScript。フロントエンドとサーバー両方をstrictで型検査する。
+
+## 実演ガイドの追加
+
+masterはチャプター1から未実装の学習開始状態。実演はチャプター0に集約する。学習済みのタスク実装とテスト、過去の解答記録はmy-studyに保持する。
+
+
+## チャプター0
+
+初期画面にカウンターの導入実演を追加。VitestとTesting Libraryの役割・構文・実行結果を説明し、basic-01へつなぐ。既存18課題のIDと保存済み進捗は変更しない。詳細は [チャプター0仕様](chapter-00.md)。
