@@ -30,3 +30,28 @@ coverage/
 server/data/
 
 .learning/
+
+# Local environment values (keep shareable examples)
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# Tool caches and temporary output
+*.tsbuildinfo
+.cache/
+.vite/
+.npm/
+.eslintcache
+.nyc_output/
+blob-report/
+playwright/.cache/
+tmp/
+temp/
+*.tmp
+*.bak
+
+# Machine-specific agent settings and pending sync notes
+.codex/
+.claude/
+/docs/walkthrough/chapter-00/notion-pending.md
