@@ -12,6 +12,7 @@ type TaskList = {
   id: string;
   title: string;
   isDone: boolean;
+  createdAt: Date;
 };
 
 const data = localStorage.getItem('taskList');
@@ -23,16 +24,59 @@ export default function Chapters() {
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [targetId, setTargetId] = useState<string>();
   const [taskList, setTaskList] = useState<TaskList[]>(localTaskList);
-  const [isDone, setIsDone] = useState<boolean>(false);
+  const [searchInput, setSearchInput] = useState<string>('');
+  const [category, setCategory] = useState<'all' | 'done' | 'notDone'>('all');
+  const [sortStatus, setSortStatus] = useState<
+    'default' | 'title' | 'new' | 'old'
+  >('default');
   const prevEditInputRef = useRef<string>('');
+  const notIsDoneTaskLength = taskList.filter((obj) => !obj.isDone).length;
 
+  const getSortStatusList = (data: TaskList[]) => {
+    if (sortStatus === 'new') {
+      return data.toSorted(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      );
+    }
+    if (sortStatus === 'old')
+      return data.toSorted(
+        (a, b) =>
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+      );
+    if (sortStatus === 'title')
+      return data.toSorted((a, b) => a.title.localeCompare(b.title, 'ja'));
+    return data;
+  };
+  const getSearchTaskList = () => {
+    if (taskList.length === 0) return [];
+
+    const searchTaskList = searchInput
+      ? taskList.filter((obj) => obj.title.includes(searchInput))
+      : taskList;
+
+    if (category === 'all') {
+      return getSortStatusList(searchTaskList);
+    } else if (category === 'done') {
+      const doneSortList = searchTaskList.filter((obj) => obj.isDone);
+      return getSortStatusList(doneSortList);
+    } else {
+      const notDoneSortList = searchTaskList.filter((obj) => !obj.isDone);
+      return getSortStatusList(notDoneSortList);
+    }
+  };
   const handleAddButton = () => {
     const trimText = userInputTask.trim();
     if (!trimText)
       return setErrorMessage(
         'タスク名を入力してください。空白だけでは追加できません。',
       );
-    const newTask = { id: crypto.randomUUID(), title: trimText, isDone: false };
+    const newTask = {
+      id: crypto.randomUUID(),
+      title: trimText,
+      isDone: false,
+      createdAt: new Date(),
+    };
     setTaskList((currentTasks) => [...currentTasks, newTask]);
     setUserInputTask('');
     setErrorMessage('');
@@ -88,16 +132,18 @@ export default function Chapters() {
     setUserEditInput('');
   };
   const handleToggleButton = (selectedId: string) => {
-    setIsDone((prev) => !prev);
     setTaskList((prev) =>
-      prev.map((obj) => (selectedId === obj.id ? { ...obj, isDone } : obj)),
+      prev.map((obj) =>
+        selectedId === obj.id ? { ...obj, isDone: !obj.isDone } : obj,
+      ),
     );
   };
-  const notIsDoneTaskLength = taskList.filter((obj) => !obj.isDone).length;
 
   useEffect(() => {
     localStorage.setItem('taskList', JSON.stringify(taskList));
   }, [taskList, setTaskList]);
+
+  const visibleTasks = getSearchTaskList();
 
   return (
     <section className="task-workspace" aria-label="タスク管理プレビュー">
@@ -115,6 +161,79 @@ export default function Chapters() {
           {errorMessage}
         </p>
       )}
+      <div>
+        <div style={{ marginBottom: 3 }}>
+          <label htmlFor="task-search">タスク検索</label>
+          <input
+            type="text"
+            id="task-search"
+            role="textbox"
+            aria-label="searchInput"
+            placeholder="検索したいタスク名を入力してください。"
+            onChange={(e) => setSearchInput(e.target.value)}
+          />
+        </div>
+        <label>種類別表示</label>
+        <div className="task-ui-actions">
+          <button
+            onClick={() => setCategory('all')}
+            role="button"
+            aria-label="all"
+          >
+            全
+          </button>
+          <button
+            onClick={() => setCategory('done')}
+            role="button"
+            aria-label="done"
+          >
+            完
+          </button>
+          <button
+            onClick={() => setCategory('notDone')}
+            role="button"
+            aria-label="notDone"
+          >
+            未
+          </button>
+        </div>
+      </div>
+      <div>
+        <div>
+          <label>並べ替え</label>
+          <div className="task-ui-actions">
+            <button
+              onClick={() => setSortStatus('default')}
+              role="button"
+              aria-label="sortDefault"
+            >
+              追加順
+            </button>
+            <button
+              onClick={() => setSortStatus('title')}
+              role="button"
+              aria-label="sortTitle"
+            >
+              タイトル
+            </button>
+            <button
+              onClick={() => setSortStatus('new')}
+              role="button"
+              aria-label="sortNew"
+            >
+              new
+            </button>
+            <button
+              onClick={() => setSortStatus('old')}
+              role="button"
+              aria-label="sortOld"
+            >
+              old
+            </button>
+          </div>
+        </div>
+      </div>
+
       <div>
         <label htmlFor="task-title">タスク名</label>
         <div className="task-ui-actions">
@@ -141,87 +260,94 @@ export default function Chapters() {
           </button>
         </div>
       </div>
-      {taskList.length === 0 ? (
+
+      {taskList.length === 0 && (
         <p role="status">
           タスクはまだありません。名前を入力して追加してみましょう。
         </p>
-      ) : (
-        <ul>
-          {taskList.map((obj) =>
-            targetId === obj.id ? (
+      )}
+
+      {taskList.length > 0 && visibleTasks.length === 0 && (
+        <p role="status">該当するデータが存在しません。</p>
+      )}
+
+      <ul>
+        {visibleTasks.map((obj) =>
+          targetId === obj.id ? (
+            <div
+              style={{
+                justifyContent: 'center',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+              }}
+              key={obj.id}
+            >
+              <input
+                type="text"
+                role="textbox"
+                aria-label="editInput"
+                placeholder={obj.title}
+                value={userEditInput}
+                onChange={(e) => {
+                  setUserEditInput(e.target.value.trim());
+                  prevEditInputRef.current = userEditInput.trim();
+                }}
+              />
               <div
                 style={{
-                  justifyContent: 'center',
                   display: 'flex',
+                  justifyContent: 'center',
                   alignItems: 'center',
-                  gap: 8,
+                  gap: 5,
                 }}
-                key={obj.id}
               >
-                <input
-                  type="text"
-                  role="textbox"
-                  aria-label="editInput"
-                  placeholder={obj.title}
-                  value={userEditInput}
-                  onChange={(e) => {
-                    setUserEditInput(e.target.value.trim());
-                    prevEditInputRef.current = userEditInput.trim();
-                  }}
-                />
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    gap: 5,
-                  }}
-                >
-                  <button
-                    role="button"
-                    aria-label="editCancelButton"
-                    onClick={handleCancelButton}
-                  >
-                    🙅
-                  </button>
-                  <button
-                    role="button"
-                    aria-label="editSaveButton"
-                    onClick={handelSaveButton}
-                  >
-                    💾
-                  </button>
-                  <button
-                    role="button"
-                    aria-label="editDeleteButton"
-                    onClick={handelDeleteButton}
-                  >
-                    🗑️
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="task-list-row" key={obj.id}>
                 <button
-                  onClick={() => handleToggleButton(obj.id)}
-                  type="button"
+                  role="button"
+                  aria-label="editCancelButton"
+                  onClick={handleCancelButton}
                 >
-                  {obj.isDone ? '✅' : '🔲'}
+                  🙅
                 </button>
-                <li
-                  role="listitem"
-                  data-test-id={obj.id}
-                  onClick={() => handleCardClick(obj.id)}
-                  key={obj.id}
-                  style={obj.isDone ? { textDecoration: 'line-through' } : {}}
+                <button
+                  role="button"
+                  aria-label="editSaveButton"
+                  onClick={handelSaveButton}
                 >
-                  {obj.title}
-                </li>
+                  💾
+                </button>
+                <button
+                  role="button"
+                  aria-label="editDeleteButton"
+                  onClick={handelDeleteButton}
+                >
+                  🗑️
+                </button>
               </div>
-            ),
-          )}
-        </ul>
-      )}
+            </div>
+          ) : (
+            <div className="task-list-row" key={obj.id}>
+              <button
+                onClick={() => handleToggleButton(obj.id)}
+                type="button"
+                role="button"
+                aria-label="checkBoxButton"
+              >
+                {obj.isDone ? '✅' : '🔲'}
+              </button>
+              <li
+                role="listitem"
+                data-test-id={obj.id}
+                onClick={() => handleCardClick(obj.id)}
+                key={obj.id}
+                style={obj.isDone ? { textDecoration: 'line-through' } : {}}
+              >
+                {obj.title}
+              </li>
+            </div>
+          ),
+        )}
+      </ul>
     </section>
   );
 }

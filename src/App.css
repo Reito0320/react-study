@@ -204,3 +204,140 @@
   cursor: pointer;
 >>>>>>> 70fcf92 (chptor3 機能追加まで完了)
 }
+
+/* 学習者のタスク画面：既存の要素構成のまま余白と操作部品を整える。 */
+.task-workspace .workspace-toolbar {
+  flex-wrap: wrap;
+  gap: 10px;
+  padding-bottom: 16px;
+  margin-bottom: 20px;
+}
+.task-workspace .workspace-toolbar > strong {
+  flex: 1 0 100%;
+}
+.task-workspace .workspace-toolbar > .badge {
+  margin: 0;
+  padding: 5px 9px;
+  border-radius: 6px;
+  line-height: 1.6;
+}
+.task-workspace .workspace-toolbar > [role=status] {
+  color: #43613d;
+  font-size: 11px;
+  font-weight: 600;
+}
+.task-workspace > div {
+  min-width: 0;
+  margin-top: 18px;
+}
+.task-workspace > div > div + label {
+  margin-top: 18px;
+}
+.task-workspace label {
+  margin-bottom: 7px;
+  color: #586b51;
+  font-size: 11px;
+  font-weight: 600;
+}
+.task-workspace .task-ui-actions {
+  gap: 8px;
+}
+.task-workspace button {
+  min-height: 42px;
+  border-radius: 8px;
+  line-height: 1.5;
+}
+.task-workspace button:hover:not(:disabled) {
+  background: #e2ecd9;
+  border-color: #a9bf9a;
+}
+.task-workspace .task-ui-actions:has(> button[aria-label=all]),
+.task-workspace .task-ui-actions:has(> button[aria-label=sortDefault]) {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  padding: 5px;
+  gap: 5px;
+  border: 1px solid #e2e8dc;
+  border-radius: 10px;
+  background: #f6f8f2;
+}
+.task-workspace .task-ui-actions:has(> button[aria-label=sortDefault]) {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.task-workspace .task-ui-actions > button {
+  min-width: 0;
+  padding: 9px 10px;
+}
+.task-workspace input {
+  min-height: 44px;
+}
+.task-workspace input::placeholder {
+  color: #899383;
+  font-size: 11px;
+}
+.task-workspace button[aria-label=add] {
+  min-width: 64px;
+  min-height: 44px;
+  background: #365a3d;
+  border-color: #365a3d;
+  color: #fff;
+  font-weight: 600;
+}
+.task-workspace button[aria-label=add]:hover {
+  background: #284930;
+  border-color: #284930;
+}
+.task-workspace > ul {
+  display: grid;
+  gap: 10px;
+  margin: 20px 0 0;
+}
+.task-workspace > ul:empty {
+  margin: 0;
+}
+.task-workspace .task-list-row {
+  margin: 0;
+  gap: 8px;
+}
+.task-workspace .task-list-row > li {
+  padding: 10px 12px;
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+.task-workspace .task-list-row > li:hover {
+  background: #f0f5e9;
+  border-color: #b9cbaa;
+}
+.task-workspace > ul > div:has(> input) {
+  flex-wrap: wrap;
+  padding: 10px;
+  border: 1px solid #b9cbaa;
+  border-radius: 10px;
+  background: #f6f9f1;
+}
+.task-workspace > ul > div > input {
+  flex: 1 1 150px;
+}
+.task-workspace > ul > div > input + div {
+  flex-shrink: 0;
+  margin-left: auto;
+}
+.task-workspace > ul > div > input + div > button {
+  width: 40px;
+  padding: 8px;
+}
+.task-workspace button[aria-label=editDeleteButton] {
+  background: #fff3ef;
+  border-color: #eed4cb;
+}
+.task-workspace button[aria-label=editDeleteButton]:hover {
+  background: #fbe4dc;
+  border-color: #d8a99a;
+}
+.task-workspace > p[role=status] {
+  margin: 20px 0 0;
+  padding: 18px 14px;
+  border: 1px dashed #cfdcc3;
+  text-align: center;
+  line-height: 1.9;
+}

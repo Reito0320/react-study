@@ -197,17 +197,99 @@ describe('[basic-02] チャプター2：編集と削除を実装', () => {
 });
 
 describe('[basic-03] チャプター3：完了と未完了を切り替え', () => {
-  it('[basic-03-01] チェック操作で完了状態と状態を示すテキストが更新される', () => {});
-  it.todo(
-    '[basic-03-02] 完了から未完了に戻すとチェック状態と未完了件数も元に戻る',
-  );
-  it.todo('[basic-03-03] タスクが0件のとき未完了件数は0になる');
+  beforeEach(() => {
+    render(<Chapters />);
+  });
+  it('[basic-03-01] チェック操作で完了状態と状態を示すテキストが更新される', async () => {
+    const mainInput = screen.getByRole('textbox', { name: 'input' });
+    const addButton = screen.getByRole('button', { name: 'add' });
+    const infoMessage = screen.getByRole('status', { name: 'isDoneInfo' });
+    expect(infoMessage).toHaveTextContent(/^未完了のタスクは0件です。$/);
+
+    const user = userEvent.setup();
+    await user.type(mainInput, 'task1');
+    await user.click(addButton);
+
+    const listItems = screen.getByRole('listitem');
+    const checkBoxButton = screen.getByRole('button', {
+      name: 'checkBoxButton',
+    });
+    expect(checkBoxButton).toHaveTextContent(/^🔲$/);
+    expect(listItems).toHaveTextContent(/^task1$/);
+    expect(infoMessage).toHaveTextContent(/^未完了のタスクは1件です。$/);
+
+    await user.click(checkBoxButton);
+    expect(infoMessage).toHaveTextContent(/^未完了のタスクは0件です。$/);
+    expect(checkBoxButton).toHaveTextContent(/^✅$/);
+  });
+  it('[basic-03-02] 完了から未完了に戻すとチェック状態と未完了件数も元に戻る', async () => {
+    const mainInput = screen.getByRole('textbox', { name: 'input' });
+    const addButton = screen.getByRole('button', { name: 'add' });
+    const infoMessage = screen.getByRole('status', { name: 'isDoneInfo' });
+    expect(infoMessage).toHaveTextContent(/^未完了のタスクは0件です。$/);
+
+    const user = userEvent.setup();
+    await user.type(mainInput, 'task1');
+    await user.click(addButton);
+
+    const listItems = screen.getByRole('listitem');
+    const checkBoxButton = screen.getByRole('button', {
+      name: 'checkBoxButton',
+    });
+    expect(checkBoxButton).toHaveTextContent(/^🔲$/);
+    expect(listItems).toHaveTextContent(/^task1$/);
+    expect(infoMessage).toHaveTextContent(/^未完了のタスクは1件です。$/);
+
+    await user.click(checkBoxButton);
+    expect(infoMessage).toHaveTextContent(/^未完了のタスクは0件です。$/);
+    expect(checkBoxButton).toHaveTextContent(/^✅$/);
+  });
+  it('[basic-03-03] タスクが0件のとき未完了件数は0になる', () => {
+    const infoMessage = screen.getByRole('status', { name: 'isDoneInfo' });
+    expect(infoMessage).toHaveTextContent(/^未完了のタスクは0件です。$/);
+  });
 });
 
 describe('[basic-04] チャプター4：検索・絞り込み・並び替え', () => {
-  it.todo(
-    '[basic-04-01] タイトルの部分一致検索と完了状態フィルターを同時に適用する',
-  );
+  beforeEach(() => {
+    render(<Chapters />);
+  });
+  it('[basic-04-01] タイトルの部分一致検索と完了状態フィルターを同時に適用する', async () => {
+    const mainInput = screen.getByRole('textbox', { name: 'input' });
+    const searchInput = screen.getByRole('textbox', { name: 'searchInput' });
+    const addButton = screen.getByRole('button', { name: 'add' });
+    const sortDoneButton = screen.getByRole('button', { name: 'done' });
+
+    const user = userEvent.setup();
+    await user.type(mainInput, '絵を描く');
+    await user.click(addButton);
+    await user.type(mainInput, 'お布団を干す');
+    await user.click(addButton);
+    await user.type(mainInput, 'お皿を洗う');
+    await user.click(addButton);
+
+    const listitems = screen.getAllByRole('listitem');
+    expect(listitems[0]).toHaveTextContent(/^絵を描く$/);
+    expect(listitems[1]).toHaveTextContent(/^お布団を干す$/);
+    expect(listitems[2]).toHaveTextContent(/^お皿を洗う$/);
+
+    await user.type(searchInput, 'お');
+    const newListItems = screen.getAllByRole('listitem');
+    expect(newListItems).toHaveLength(2);
+    expect(newListItems[0]).toHaveTextContent(/^お布団を干す$/);
+    expect(newListItems[1]).toHaveTextContent(/^お皿を洗う$/);
+
+    const checkBoxButtons = screen.getAllByRole('button', {
+      name: 'checkBoxButton',
+    });
+    expect(checkBoxButtons[1]).toHaveTextContent(/^🔲$/);
+    await user.click(checkBoxButtons[1]);
+    expect(checkBoxButtons[1]).toHaveTextContent(/^✅$/);
+    await user.click(sortDoneButton);
+    const lastListItems = await screen.findAllByRole('listitem');
+    expect(lastListItems).toHaveLength(1);
+    expect(lastListItems[0]).toHaveTextContent(/^お皿を洗う$/);
+  });
   it.todo(
     '[basic-04-02] タイトル順に並べた後に検索を消して追加順に戻すと元の順序になる',
   );
