@@ -13,11 +13,11 @@ export async function fingerprint(root = projectRoot): Promise<string> {
       if (entry.isSymbolicLink() || join(path, entry.name) === join(root, 'server/data')) continue;
       const child = join(path, entry.name);
       if (entry.isDirectory()) await walk(child);
-      else if (/\.(tsx?|css|json)$/.test(entry.name)) files.push(child);
+      else if (/\.(tsx?|css|json|prisma|sql)$/.test(entry.name)) files.push(child);
     }
   }
-  await walk(join(root, 'src')); await walk(join(root, 'server'));
-  for (const name of ['package.json', 'package-lock.json', 'vitest.config.ts', 'vite.config.ts']) files.push(join(root, name));
+  await walk(join(root, 'src')); await walk(join(root, 'server')); await walk(join(root, 'prisma'));
+  for (const name of ['package.json', 'package-lock.json', 'vitest.config.ts', 'vite.config.ts', 'prisma.config.ts']) files.push(join(root, name));
   const hash = createHash('sha256');
   for (const file of files.sort()) { hash.update(relative(root, file)); hash.update(await readFile(file)); }
   return hash.digest('hex');

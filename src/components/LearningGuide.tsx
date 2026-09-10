@@ -2,6 +2,23 @@ import type { Lesson } from '../data/curriculum'
 
 const stepTitles = ['要件を具体例にする', 'エディタで実装する', 'プレビューで操作する', 'テストを書いて実行する']
 export function NextAction({ lesson, current }: { lesson: Lesson; current: number }) {
+  if (lesson.id === 'basic-07' || lesson.id === 'intermediate-07') return <section className="next-action" aria-labelledby="next-action-title">
+    <div className="eyebrow">LOCAL DATABASE LAB</div>
+    <h2 id="next-action-title">PostgreSQL・Prisma学習ガイド</h2>
+    <p>インストラクターの既存PostgreSQLを使って始めます。手順は <code>docs/prisma-local.md</code> にまとめています。</p>
+    {lesson.id === 'basic-07' ? <>
+      <ol>
+        <li>既存のPostgreSQLに教材専用DBを作り、<code>.env.example</code>を参考に<code>.env</code>へ接続先を設定します。</li>
+        <li><code>npm run db:apply</code> → <code>npm run db:generate</code> → <code>npm run db:check</code></li>
+        <li><code>npm run db:demo -- "Prismaを学ぶ"</code>で保存し、<code>npm run db:studio</code>で確認します。</li>
+      </ol>
+    </> : <>
+      <p><code>server/prisma.test.ts</code>の参考例3件を読み、一覧取得のTODO2件を実装します。実PrismaClientの代わりにモックを渡すため、DBの起動は不要です。</p>
+      <p><code>npm run test:prisma</code>で確認し、<code>npm run test:learning -- intermediate-07</code>で結果パネルを更新します。</p>
+    </>}
+    <p>PracticeTaskは独立した参考例です。タスク画面のAPI連携は基礎6で実装し、応用としてこの保存方式を組み込めます。</p>
+    <p>提供済みテストの成功だけでは章は完了しません。実DBの確認／自分のテスト追加まで行い、下の工程を記録します。</p>
+  </section>
   return <section className="next-action" aria-labelledby="next-action-title">
     <div className="eyebrow">YOUR NEXT ACTION</div>
     <h2 id="next-action-title">{current === 4 ? 'この課題の記録が完了しました' : `次にすること：${stepTitles[current]}`}</h2>
