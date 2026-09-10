@@ -106,3 +106,48 @@ it('opens the Prisma chapters and preserves existing progress', async () => {
   await waitFor(() => expect(screen.getByRole('heading', { name: 'Prismaのモックテストを書く' })).toBeVisible())
   expect(screen.getByRole('button', { name: /編集と削除を実装/ })).toHaveTextContent('完了')
 })
+
+it('skips the optional chapter on the required path and allows leaving it unfinished', async () => {
+  localStorage.setItem('hook-lab-selected-chapter', 'basic-04')
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({ 'basic-04': 4 }))
+  const user = userEvent.setup()
+  render(<App />)
+  await user.click(screen.getByRole('button', { name: /次の課題へ/ }))
+  await waitFor(() => expect(screen.getByRole('heading', { name: 'Expressで取得と保存' })).toBeVisible())
+  await user.click(screen.getByRole('button', { name: /期限と優先度を設定（任意）/ }))
+  await user.click(screen.getByRole('button', { name: /API連携へ進む/ }))
+  await waitFor(() => expect(screen.getByRole('heading', { name: 'Expressで取得と保存' })).toBeVisible())
+})
+
+it('persists the preview width and restores it after remount', () => {
+  const view = renderLesson()
+  fireEvent.keyDown(screen.getByRole('separator', { name: '実装画面の幅' }), { key: 'End' })
+  view.unmount()
+  render(<App />)
+  expect(screen.getByRole('separator', { name: '実装画面の幅' })).toHaveAttribute('aria-valuenow', '70')
+})
+
+it('closes the overlay with Escape and returns focus to the menu button', async () => {
+  const user = userEvent.setup()
+  render(<App />)
+  await user.keyboard('{Escape}')
+  const toggle = screen.getByRole('button', { name: 'メニューを開く' })
+  expect(toggle).toHaveFocus()
+  expect(toggle).toHaveAttribute('aria-expanded', 'false')
+})
+
+it('resizes the preview by dragging the divider and stops on release', () => {
+  const view = renderLesson()
+  const divider = screen.getByRole('separator', { name: '実装画面の幅' })
+  const grid = view.container.querySelector('.work-grid')!
+  vi.spyOn(grid, 'getBoundingClientRect').mockReturnValue({ left: 0, right: 1020, width: 1020 } as DOMRect)
+  divider.setPointerCapture = vi.fn()
+  divider.hasPointerCapture = vi.fn(() => true)
+  divider.releasePointerCapture = vi.fn()
+  fireEvent.pointerDown(divider, { button: 0, pointerId: 1 })
+  fireEvent.pointerMove(divider, { clientX: 410, pointerId: 1 })
+  expect(divider).toHaveAttribute('aria-valuenow', '60')
+  fireEvent.pointerUp(divider, { pointerId: 1 })
+  fireEvent.pointerMove(divider, { clientX: 310, pointerId: 1 })
+  expect(divider).toHaveAttribute('aria-valuenow', '60')
+})

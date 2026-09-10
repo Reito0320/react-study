@@ -122,3 +122,62 @@
   background: var(--level-selected);
   color: var(--level-accent);
 }
+
+/* Navigation overlays the workspace without changing its available width. */
+.app-shell { --topbar-height: 76px; }
+.topbar { position: relative; z-index: 50; padding-left: 96px; }
+.topbar .sidebar-toggle { position: fixed; top: 18px; left: 38px; z-index: 50; background: #fff; box-shadow: 0 3px 12px #172e2720; }
+.layout, .layout.sidebar-collapsed { display: block; }
+.layout main, .layout.sidebar-collapsed main { max-width: 1800px; }
+.sidebar-backdrop {
+  position: fixed; inset: var(--topbar-height) 0 0; z-index: 39;
+  border: 0; border-radius: 0; padding: 0;
+  background: #172e2740; cursor: pointer;
+}
+.sidebar-backdrop:hover:not(:disabled) { background: #172e2740; }
+.sidebar-clip {
+  position: fixed; top: var(--topbar-height); bottom: 0; left: 0;
+  z-index: 40; width: min(320px, 88vw); overflow-y: auto;
+  overscroll-behavior: contain; background: #fbfcf9;
+  box-shadow: 14px 0 35px #172e2726;
+  transform: translateX(0); transition: transform .2s ease, visibility .2s;
+}
+.sidebar-collapsed .sidebar-clip {
+  transform: translateX(-100%); visibility: hidden; pointer-events: none;
+}
+.sidebar-clip .sidebar { width: 100%; height: auto; min-height: 100%; padding: 28px 23px; }
+.sidebar-clip .sidebar nav { display: block; max-height: none; overflow: visible; }
+.sidebar-clip .sidebar h2, .sidebar-clip .sidebar > .muted { display: block; }
+.workspace-divider { display: none; }
+@media (min-width: 901px) {
+  .work-grid { gap: 0; grid-template-columns: minmax(0, var(--lesson-width, 1fr)) 20px minmax(0, var(--preview-width, 1fr)); }
+  .preview-column { top: calc(var(--topbar-height) + 16px); max-height: calc(100dvh - var(--topbar-height) - 32px); }
+}
+@media (max-width: 900px) {
+
+  .work-grid { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 650px) {
+  .app-shell { --topbar-height: 64px; }
+  .topbar { padding-left: 70px; }
+  .topbar .sidebar-toggle { top: 12px; left: 18px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sidebar-clip { transition: none; }
+}
+
+@media (min-width: 901px) {
+  .workspace-divider {
+    display: flex; justify-content: center; align-items: center;
+    position: sticky; top: 0; height: 100dvh;
+    cursor: col-resize; touch-action: none; user-select: none;
+    border-radius: 6px;
+  }
+  .workspace-divider::before {
+    content: ''; position: fixed; top: 0; bottom: 0;
+    width: 2px; background: #d9e2d3;
+  }
+  .workspace-divider:hover, .workspace-divider:focus-visible { background: #e7eedf; }
+  .workspace-divider:focus-visible { outline: 2px solid #56705e; outline-offset: -2px; }
+  .work-grid > .lesson-card, .work-grid > .preview-column { min-width: 0; }
+}

@@ -2,6 +2,7 @@ export type Level = 'basic' | 'intermediate' | 'nightmare'
 export interface Lesson {
   id: string
   level: Level
+  optional?: boolean
   title: string
   summary: string
   hooks: string[]
@@ -57,7 +58,7 @@ export const lessons: Lesson[] = [
     testHints: ['絞り込み関数をVitestで検証し、組み合わせ操作をUIテストで確認する。', 'ソート後も元配列が変化しないことを確認する。'], reference: refs.state,
   },
   {
-    id: 'basic-05', level: 'basic', title: '期限と優先度を設定', summary: '複数入力とアクセシブルなラベルを整える。', hooks: ['useState', 'useId'], file: workspace,
+    id: 'basic-05', level: 'basic', optional: true, title: '期限と優先度を設定（任意）', summary: 'チャプター1〜4の応用練習です。新しい状態管理の仕組みは増やしません。必要に応じて取り組み、スキップしてAPI連携へ進めます。ラベルやキーボード操作は、既存のタイトル入力でも練習できます。', hooks: ['useState', 'useId'], file: workspace,
     requirements: ['任意の期限とlow・medium・highの優先度を追加・編集できる。', '期限未設定を許可し、一覧に期限と優先度を表示する。', '各入力にラベルを付け、色だけに意味を依存させない。'],
     checks: ['期限なしでも追加でき、後から期限を設定・解除できる。', 'キーボード操作だけで各フィールドを編集できる。'],
     testHints: ['ラベルから入力を取得して設定と解除を検証する。', '日付はYYYY-MM-DDの値として検証し、時刻依存を持ち込まない。'], reference: refs.ref,
