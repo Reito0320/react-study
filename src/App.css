@@ -69,6 +69,7 @@
 .requirements .edit-location h4{font-size:11px;color:#557046;margin:0 0 8px}
 .requirements .edit-location>code{background:#ffffffb3;border-color:#d9e5ca;overflow-wrap:anywhere}
 
+<<<<<<< HEAD
 /* Difficulty colors stay scoped to the sidebar. */
 .sidebar .level-group {
   --level-accent: #286344;
@@ -180,4 +181,26 @@
   .workspace-divider:hover, .workspace-divider:focus-visible { background: #e7eedf; }
   .workspace-divider:focus-visible { outline: 2px solid #56705e; outline-offset: -2px; }
   .work-grid > .lesson-card, .work-grid > .preview-column { min-width: 0; }
+=======
+.task-list-row {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  margin: 9px 0;
+}
+.task-workspace .task-list-row > button {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+}
+.task-workspace .task-list-row > li {
+  min-width: 0;
+  min-height: 44px;
+  margin: 0;
+  cursor: pointer;
+>>>>>>> 70fcf92 (chptor3 機能追加まで完了)
 }

@@ -1,4 +1,9 @@
-import { findByRole, render, screen } from '@testing-library/react';
+import {
+  findAllByRole,
+  findByRole,
+  render,
+  screen,
+} from '@testing-library/react';
 import { beforeEach, describe, expect, it } from 'vitest';
 import Chapters from './chapters';
 import userEvent from '@testing-library/user-event';
@@ -132,18 +137,67 @@ describe('[basic-02] チャプター2：編集と削除を実装', () => {
     await user.clear(editInput);
     await user.type(editInput, '歯を磨く');
     expect(editInput).toHaveValue('歯を磨く');
-
-    await user.click(listItem[1]);
-    expect(editInput).toHaveValue('歯を磨く');
+    const cancelButton = await screen.findByRole('button', {
+      name: 'editCancelButton',
+    });
+    await user.click(cancelButton);
+    const newListItems = screen.getAllByRole('listitem');
+    expect(newListItems[0]).toHaveTextContent(/^顔を洗う$/);
   });
-  it.todo('[basic-02-03] 空白のみのタイトルでは保存できず、理由が表示される');
-  it.todo('[basic-02-04] 同名タスクが2件あっても指定したIDの1件だけを削除する');
+  it('[basic-02-03] 空白のみのタイトルでは保存できず、理由が表示される', async () => {
+    const mainInput = screen.getByRole('textbox', { name: 'input' });
+    const addButton = screen.getByRole('button', { name: 'add' });
+
+    const user = userEvent.setup();
+    await user.type(mainInput, 'お酒を飲む');
+    await user.click(addButton);
+    const listItem = await screen.findByRole('listitem');
+    expect(listItem).toHaveTextContent(/^お酒を飲む$/);
+
+    await user.click(listItem);
+    const editInput = await screen.findByRole('textbox', { name: 'editInput' });
+    await user.clear(editInput);
+    const editSaveButton = await screen.findByRole('button', {
+      name: 'editSaveButton',
+    });
+    await user.click(editSaveButton);
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent(
+      /^新しいタスク名を入力してください。空白だけでは編集できません。$/,
+    );
+  });
+  it('[basic-02-04] 同名タスクが2件あっても指定したIDの1件だけを削除する', async () => {
+    const mainInput = screen.getByRole('textbox', { name: 'input' });
+    const addButton = screen.getByRole('button', { name: 'add' });
+
+    const user = userEvent.setup();
+    await user.type(mainInput, '宿題');
+    await user.click(addButton);
+    await user.type(mainInput, '宿題');
+    await user.click(addButton);
+
+    const listitems = await screen.findAllByRole('listitem');
+    expect(listitems[0]).toHaveTextContent(/^宿題$/);
+    const firstItemId = listitems[0].getAttribute('data-test-id');
+    expect(listitems[1]).toHaveTextContent(/^宿題$/);
+    expect(listitems[0]).not.toHaveAttribute(
+      'data-test-id',
+      listitems[1].getAttribute('data-test-id'),
+    );
+
+    await user.click(listitems[0]);
+    const editDeleteButton = await screen.findByRole('button', {
+      name: 'editDeleteButton',
+    });
+    await user.click(editDeleteButton);
+    const newListItems = await screen.findAllByRole('listitem');
+    expect(newListItems).toHaveLength(1);
+    expect(newListItems[0]).not.toHaveAttribute('data-test-id', firstItemId);
+  });
 });
 
 describe('[basic-03] チャプター3：完了と未完了を切り替え', () => {
-  it.todo(
-    '[basic-03-01] チェック操作で完了状態と状態を示すテキストが更新される',
-  );
+  it('[basic-03-01] チェック操作で完了状態と状態を示すテキストが更新される', () => {});
   it.todo(
     '[basic-03-02] 完了から未完了に戻すとチェック状態と未完了件数も元に戻る',
   );

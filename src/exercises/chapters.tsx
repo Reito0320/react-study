@@ -11,6 +11,7 @@ import { useEffect, useRef, useState } from 'react';
 type TaskList = {
   id: string;
   title: string;
+  isDone: boolean;
 };
 
 const data = localStorage.getItem('taskList');
@@ -22,6 +23,7 @@ export default function Chapters() {
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [targetId, setTargetId] = useState<string>();
   const [taskList, setTaskList] = useState<TaskList[]>(localTaskList);
+  const [isDone, setIsDone] = useState<boolean>(false);
   const prevEditInputRef = useRef<string>('');
 
   const handleAddButton = () => {
@@ -30,7 +32,7 @@ export default function Chapters() {
       return setErrorMessage(
         'タスク名を入力してください。空白だけでは追加できません。',
       );
-    const newTask = { id: crypto.randomUUID(), title: trimText };
+    const newTask = { id: crypto.randomUUID(), title: trimText, isDone: false };
     setTaskList((currentTasks) => [...currentTasks, newTask]);
     setUserInputTask('');
     setErrorMessage('');
@@ -58,16 +60,10 @@ export default function Chapters() {
     if (!targetDataExists)
       return setErrorMessage('該当するデータが存在しません。');
 
-    const targetTaskTitle = userEditInput
-      ? userEditInput
-      : taskList.find((obj) => obj.id === targetId)?.title;
-    const confirm = window.confirm(
-      targetTaskTitle + 'を削除してよろしいですか？',
-    );
-    if (!confirm) return;
     setTaskList(taskList.filter((obj) => obj.id !== targetId));
     setTargetId('');
   };
+  // 9/8 未実装
   const handleCardClick = (currenttargetId: string) => {
     const targetDataTitle = taskList.find(
       (obj) => obj.id === currenttargetId,
@@ -82,8 +78,22 @@ export default function Chapters() {
     setUserEditInput(targetDataTitle);
     setTargetId(currenttargetId);
   };
-  /* targetIndexを0にする */
-  const handleCancelButton = () => {};
+  const handleCancelButton = () => {
+    const data = localStorage.getItem('taskList');
+    const localData = data ? JSON.parse(data) : null;
+    if (!localData) return;
+
+    setTaskList(localData);
+    setTargetId('');
+    setUserEditInput('');
+  };
+  const handleToggleButton = (selectedId: string) => {
+    setIsDone((prev) => !prev);
+    setTaskList((prev) =>
+      prev.map((obj) => (selectedId === obj.id ? { ...obj, isDone } : obj)),
+    );
+  };
+  const notIsDoneTaskLength = taskList.filter((obj) => !obj.isDone).length;
 
   useEffect(() => {
     localStorage.setItem('taskList', JSON.stringify(taskList));
@@ -93,6 +103,11 @@ export default function Chapters() {
     <section className="task-workspace" aria-label="タスク管理プレビュー">
       <header className="workspace-toolbar">
         <strong>My tasks</strong>
+        <small
+          role="status"
+          className="badge"
+          aria-label="isDoneInfo"
+        >{`未完了のタスクは${notIsDoneTaskLength}件です。`}</small>
         <span className="badge">学習者の実装エリア</span>
       </header>
       {errorMessage && (
@@ -167,7 +182,7 @@ export default function Chapters() {
                     aria-label="editCancelButton"
                     onClick={handleCancelButton}
                   >
-                    ◀️
+                    🙅
                   </button>
                   <button
                     role="button"
@@ -186,14 +201,23 @@ export default function Chapters() {
                 </div>
               </div>
             ) : (
-              <li
-                role="listitem"
-                data-test-id={obj.id}
-                onClick={() => handleCardClick(obj.id)}
-                key={obj.id}
-              >
-                {obj.title}
-              </li>
+              <div className="task-list-row" key={obj.id}>
+                <button
+                  onClick={() => handleToggleButton(obj.id)}
+                  type="button"
+                >
+                  {obj.isDone ? '✅' : '🔲'}
+                </button>
+                <li
+                  role="listitem"
+                  data-test-id={obj.id}
+                  onClick={() => handleCardClick(obj.id)}
+                  key={obj.id}
+                  style={obj.isDone ? { textDecoration: 'line-through' } : {}}
+                >
+                  {obj.title}
+                </li>
+              </div>
             ),
           )}
         </ul>
