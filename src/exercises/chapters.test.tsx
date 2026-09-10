@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import Chapters from './chapters';
 import userEvent from '@testing-library/user-event';
 
@@ -184,7 +184,16 @@ describe('[basic-02] チャプター2：編集と削除を実装', () => {
     const editDeleteButton = await screen.findByRole('button', {
       name: 'editDeleteButton',
     });
-    await user.click(editDeleteButton);
+    const confirm = vi.spyOn(window, 'confirm').mockReturnValueOnce(false).mockReturnValueOnce(true);
+    try {
+      await user.click(editDeleteButton);
+      expect(screen.getAllByRole('listitem')).toHaveLength(1);
+      expect(screen.getByRole('textbox', { name: 'editInput' })).toBeInTheDocument();
+      await user.click(editDeleteButton);
+      expect(confirm).toHaveBeenCalledTimes(2);
+    } finally {
+      confirm.mockRestore();
+    }
     const newListItems = await screen.findAllByRole('listitem');
     expect(newListItems).toHaveLength(1);
     expect(newListItems[0]).not.toHaveAttribute('data-test-id', firstItemId);

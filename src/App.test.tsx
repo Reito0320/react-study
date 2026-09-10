@@ -31,7 +31,11 @@ it('enforces the sequence, persists progress, and invalidates later steps on can
   expect(screen.getByRole('button', { name: /次の課題へ/ })).toBeDisabled()
 })
 it('reports failed persistence but lets the learner continue in memory', async () => {
-  vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => { throw new Error('quota') })
+  const setItem = Storage.prototype.setItem
+  vi.spyOn(Storage.prototype, 'setItem').mockImplementation(function (this: Storage, key, value) {
+    if (key === STORAGE_KEY) throw new Error('quota')
+    setItem.call(this, key, value)
+  })
   const user = userEvent.setup()
   renderLesson()
   await user.click(screen.getByRole('checkbox', { name: stepNames[0] }))

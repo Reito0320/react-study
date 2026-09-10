@@ -26,7 +26,8 @@ export default function Chapters() {
   const [taskList, setTaskList] = useState<TaskList[]>(localTaskList);
   const [searchInput, setSearchInput] = useState<string>('');
   const [category, setCategory] = useState<'all' | 'done' | 'notDone'>('all');
-  const [priority, setPriority] = useState<string>();
+  // 優先度の入力UIを実装するときに有効にする。
+  // const [priority, setPriority] = useState<string>();
   const [sortStatus, setSortStatus] = useState<
     'default' | 'title' | 'new' | 'old'
   >('default');
@@ -105,6 +106,13 @@ export default function Chapters() {
     if (!targetDataExists)
       return setErrorMessage('該当するデータが存在しません。');
 
+    const targetTaskTitle = userEditInput
+      ? userEditInput
+      : taskList.find((obj) => obj.id === targetId)?.title;
+    const confirm = window.confirm(
+      targetTaskTitle + 'を削除してよろしいですか？',
+    );
+    if (!confirm) return;
     setTaskList(taskList.filter((obj) => obj.id !== targetId));
     setTargetId('');
   };
