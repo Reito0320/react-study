@@ -12,7 +12,7 @@ function renderLesson() {
 
 beforeEach(() => {
   localStorage.clear()
-  vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => ({ version: 1, runs: {} }) }))
+  vi.stubGlobal('fetch', vi.fn().mockImplementation(async (url: string) => ({ ok: true, json: async () => url === '/api/tutorial/tasks' ? [] : ({ version: 1, runs: {} }) })))
 })
 afterEach(() => { vi.restoreAllMocks(); vi.unstubAllGlobals() })
 const stepNames = ['要件を読んだ', '実装した', 'UIで確認した', 'テストを追加・実行した']
@@ -150,4 +150,20 @@ it('resizes the preview by dragging the divider and stops on release', () => {
   fireEvent.pointerUp(divider, { pointerId: 1 })
   fireEvent.pointerMove(divider, { clientX: 310, pointerId: 1 })
   expect(divider).toHaveAttribute('aria-valuenow', '60')
+})
+
+it('opens the Express tutorial separately, restores it, and continues to chapter six', async () => {
+  const user = userEvent.setup()
+  const view = render(<App />)
+  await user.click(screen.getByRole('button', { name: 'Expressチュートリアル' }))
+  expect(screen.getByRole('heading', { name: 'Expressチュートリアル', level: 1 })).toBeVisible()
+  expect(screen.queryByRole('separator', { name: '実装画面の幅' })).not.toBeInTheDocument()
+  view.unmount()
+  render(<App />)
+  expect(screen.getByRole('heading', { name: 'Expressチュートリアル', level: 1 })).toBeVisible()
+  await user.click(screen.getByRole('button', { name: /チャプター6：Expressで取得と保存へ進む/ }))
+  await waitFor(() => expect(screen.getByRole('heading', { name: 'Expressで取得と保存' })).toBeVisible())
+  expect(screen.queryByRole('region', { name: 'API実演' })).not.toBeInTheDocument()
+  await user.click(screen.getByRole('button', { name: /Expressチュートリアルを開く/ }))
+  expect(screen.getByRole('heading', { name: 'Expressチュートリアル', level: 1 })).toBeVisible()
 })
