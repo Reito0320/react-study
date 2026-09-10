@@ -7,7 +7,7 @@ export default function ChapterZero({ onContinue, completed, onCompletedChange }
     <div className="eyebrow">CHAPTER 00 · はじめの実演</div>
     <h1>カウンターで、学び方をひと回り。</h1>
     <p className="chapter-lead">入力フォームの前に、ボタンを押すだけの小さな例から。要件を読み、実装して、動かしてからテストを書く流れを体験しましょう。</p>
-    <p className="muted">完成済みの導入実演です。18課題の進捗とは別で、操作してもタスク管理のデータやチェックは変わりません。</p>
+    <p className="muted">完成済みの導入実演です。各課題の進捗とは別で、操作してもタスク管理のデータやチェックは変わりません。</p>
     <section className="walkthrough-step"><h2>01 要件を読む</h2><ul><li>最初は0を表示する。</li><li>「＋1」を押すたびに1増える。</li><li>「リセット」を押すと0に戻る。</li></ul><p>この3つだけです。配列・入力文字・APIはまだ扱いません。「0 → ＋1 → 1 → ＋1 → 2 → リセット → 0」を確認例にします。</p></section>
     <section className="walkthrough-step"><h2>02 実装する</h2><p>エディタで <code>src/tutorial/Counter.tsx</code> を開きます。実演用に完成したコードが入っています。読みながら自分でも書き直し、保存して変化を確認できます。</p><details className="reference"><summary>カウンターのTypeScriptコードと解説を開く</summary><div className="reference-content"><pre><code>{counterSource}</code></pre><ul><li><code>useState(0)</code>：最初の値は0。countはnumber型として推論されます。</li><li><code>setCount((current) =&gt; current + 1)</code>：直前の値から次の値を計算します。</li><li><code>setCount(0)</code>：リセット時は0を指定します。</li><li><code>output</code>：計算結果を表示する要素。aria-labelで「カウント」という名前を付けます。</li></ul></div></details></section>
     <section className="walkthrough-step"><h2>03 UIで確かめる</h2><p><code>npm run dev</code> で起動したこの画面で、下のボタンを押します。0から始まり、2回押すと2、リセットで0になれば要件どおりです。</p><Counter /><p>ここで期待と違ったらCounter.tsxへ戻って修正。UIで確認できてから、次のテストへ進みます。</p></section>

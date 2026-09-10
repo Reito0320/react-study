@@ -68,3 +68,116 @@
 .requirements .edit-location{margin-top:16px;padding-top:14px;border-top:1px solid #d9e5ca}
 .requirements .edit-location h4{font-size:11px;color:#557046;margin:0 0 8px}
 .requirements .edit-location>code{background:#ffffffb3;border-color:#d9e5ca;overflow-wrap:anywhere}
+
+/* Difficulty colors stay scoped to the sidebar. */
+.sidebar .level-group {
+  --level-accent: #286344;
+  --level-text: #355744;
+  --level-muted: #587461;
+  --level-surface: #f0f7f1;
+  --level-hover: #e4f0e7;
+  --level-selected: #d3e8da;
+  --level-border: #bdd7c5;
+  padding: 12px 8px;
+  border: 1px solid var(--level-border);
+  border-left: 3px solid var(--level-accent);
+  border-radius: 10px;
+  background: var(--level-surface);
+}
+.sidebar .level-group[data-level="intermediate"] {
+  --level-accent: #285da3;
+  --level-text: #354f73;
+  --level-muted: #526e91;
+  --level-surface: #f0f5fc;
+  --level-hover: #e3edfa;
+  --level-selected: #d2e2f7;
+  --level-border: #bed1eb;
+}
+.sidebar .level-group[data-level="nightmare"] {
+  --level-accent: #76409a;
+  --level-text: #644575;
+  --level-muted: #7d608c;
+  --level-surface: #f8f2fb;
+  --level-hover: #efe2f6;
+  --level-selected: #e7d4f1;
+  --level-border: #d9c1e7;
+}
+.sidebar .level-heading { padding: 0 3px; }
+.sidebar .level-heading h3,
+.sidebar .level-heading > span { color: var(--level-accent); }
+.sidebar .level-heading small,
+.sidebar .level-group .lesson-number { color: var(--level-muted); }
+.sidebar .level-group .lesson-link { color: var(--level-text); }
+.sidebar .level-group .lesson-link:hover { background: var(--level-hover); }
+.sidebar .level-group .lesson-link.active {
+  background: var(--level-selected);
+  color: var(--level-accent);
+  box-shadow: inset 3px 0 var(--level-accent);
+}
+.sidebar .level-group .lesson-link:focus-visible {
+  outline: 2px solid var(--level-accent);
+  outline-offset: 2px;
+}
+.sidebar .level-group .completion-badge {
+  background: var(--level-selected);
+  color: var(--level-accent);
+}
+
+/* Navigation overlays the workspace without changing its available width. */
+.app-shell { --topbar-height: 76px; }
+.topbar { position: relative; z-index: 50; padding-left: 96px; }
+.topbar .sidebar-toggle { position: fixed; top: 18px; left: 38px; z-index: 50; background: #fff; box-shadow: 0 3px 12px #172e2720; }
+.layout, .layout.sidebar-collapsed { display: block; }
+.layout main, .layout.sidebar-collapsed main { max-width: 1800px; }
+.sidebar-backdrop {
+  position: fixed; inset: var(--topbar-height) 0 0; z-index: 39;
+  border: 0; border-radius: 0; padding: 0;
+  background: #172e2740; cursor: pointer;
+}
+.sidebar-backdrop:hover:not(:disabled) { background: #172e2740; }
+.sidebar-clip {
+  position: fixed; top: var(--topbar-height); bottom: 0; left: 0;
+  z-index: 40; width: min(320px, 88vw); overflow-y: auto;
+  overscroll-behavior: contain; background: #fbfcf9;
+  box-shadow: 14px 0 35px #172e2726;
+  transform: translateX(0); transition: transform .2s ease, visibility .2s;
+}
+.sidebar-collapsed .sidebar-clip {
+  transform: translateX(-100%); visibility: hidden; pointer-events: none;
+}
+.sidebar-clip .sidebar { width: 100%; height: auto; min-height: 100%; padding: 28px 23px; }
+.sidebar-clip .sidebar nav { display: block; max-height: none; overflow: visible; }
+.sidebar-clip .sidebar h2, .sidebar-clip .sidebar > .muted { display: block; }
+.workspace-divider { display: none; }
+@media (min-width: 901px) {
+  .work-grid { gap: 0; grid-template-columns: minmax(0, var(--lesson-width, 1fr)) 20px minmax(0, var(--preview-width, 1fr)); }
+  .preview-column { top: calc(var(--topbar-height) + 16px); max-height: calc(100dvh - var(--topbar-height) - 32px); }
+}
+@media (max-width: 900px) {
+
+  .work-grid { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 650px) {
+  .app-shell { --topbar-height: 64px; }
+  .topbar { padding-left: 70px; }
+  .topbar .sidebar-toggle { top: 12px; left: 18px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sidebar-clip { transition: none; }
+}
+
+@media (min-width: 901px) {
+  .workspace-divider {
+    display: flex; justify-content: center; align-items: center;
+    position: sticky; top: 0; height: 100dvh;
+    cursor: col-resize; touch-action: none; user-select: none;
+    border-radius: 6px;
+  }
+  .workspace-divider::before {
+    content: ''; position: fixed; top: 0; bottom: 0;
+    width: 2px; background: #d9e2d3;
+  }
+  .workspace-divider:hover, .workspace-divider:focus-visible { background: #e7eedf; }
+  .workspace-divider:focus-visible { outline: 2px solid #56705e; outline-offset: -2px; }
+  .work-grid > .lesson-card, .work-grid > .preview-column { min-width: 0; }
+}
