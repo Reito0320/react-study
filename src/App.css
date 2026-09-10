@@ -130,13 +130,13 @@
 .layout, .layout.sidebar-collapsed { display: block; }
 .layout main, .layout.sidebar-collapsed main { max-width: 1800px; }
 .sidebar-backdrop {
-  position: fixed; inset: var(--topbar-height) 0 0; z-index: 39;
+  position: fixed; inset: var(--menu-top, var(--topbar-height)) 0 0; z-index: 39;
   border: 0; border-radius: 0; padding: 0;
   background: #172e2740; cursor: pointer;
 }
 .sidebar-backdrop:hover:not(:disabled) { background: #172e2740; }
 .sidebar-clip {
-  position: fixed; top: var(--topbar-height); bottom: 0; left: 0;
+  position: fixed; top: var(--menu-top, var(--topbar-height)); bottom: 0; left: 0;
   z-index: 40; width: min(320px, 88vw); overflow-y: auto;
   overscroll-behavior: contain; background: #fbfcf9;
   box-shadow: 14px 0 35px #172e2726;
@@ -145,13 +145,14 @@
 .sidebar-collapsed .sidebar-clip {
   transform: translateX(-100%); visibility: hidden; pointer-events: none;
 }
-.sidebar-clip .sidebar { width: 100%; height: auto; min-height: 100%; padding: 28px 23px; }
+.sidebar-clip .sidebar { width: 100%; height: auto; min-height: 100%; padding: max(28px, calc(var(--topbar-height) - var(--menu-top, var(--topbar-height)))) 23px 28px; }
 .sidebar-clip .sidebar nav { display: block; max-height: none; overflow: visible; }
 .sidebar-clip .sidebar h2, .sidebar-clip .sidebar > .muted { display: block; }
 .workspace-divider { display: none; }
 @media (min-width: 901px) {
   .work-grid { gap: 0; grid-template-columns: minmax(0, var(--lesson-width, 1fr)) 20px minmax(0, var(--preview-width, 1fr)); }
-  .preview-column { top: calc(var(--topbar-height) + 16px); max-height: calc(100dvh - var(--topbar-height) - 32px); }
+  /* The header scrolls away, so the preview can use the full viewport. */
+  .preview-column { top: 0; max-height: 100dvh; }
 }
 @media (max-width: 900px) {
 
@@ -181,3 +182,15 @@
   .workspace-divider:focus-visible { outline: 2px solid #56705e; outline-offset: -2px; }
   .work-grid > .lesson-card, .work-grid > .preview-column { min-width: 0; }
 }
+
+/* Standalone Express tutorial. Demo controls have their own stylesheet. */
+.api-walkthrough { margin-top: 24px; min-width: 0; }
+.api-walkthrough p, .api-walkthrough li { font-size: 13px; line-height: 1.9; overflow-wrap: anywhere; }
+.api-walkthrough pre { max-width: 100%; overflow: auto; }
+.api-writing-step { margin: 20px 0; padding: 20px; border: 1px solid #dce5d5; border-radius: 10px; background: #f7f9f1; }
+.api-writing-step h3 { font-size: 16px; }
+.api-file-map { display: grid; gap: 12px; margin: 16px 0; }
+.api-file-map div { border-left: 3px solid #8da779; padding-left: 14px; }
+.api-file-map dt { font-weight: 600; overflow-wrap: anywhere; }
+.api-file-map dd { margin: 4px 0 0; font-size: 13px; }
+@media (max-width: 650px) { .api-writing-step { padding: 14px; } }

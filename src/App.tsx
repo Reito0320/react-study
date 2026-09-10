@@ -9,6 +9,7 @@ import Chapters from './exercises/chapters'
 import TestResultsPanel from './components/TestResultsPanel'
 import { NextAction } from './components/LearningGuide'
 import ChapterZero from './tutorial/ChapterZero'
+import ExpressTutorial from './tutorial/ExpressTutorial'
 import './App.css'
 
 const levels: { id: Level; name: string; description: string }[] = [
@@ -19,6 +20,8 @@ const levels: { id: Level; name: string; description: string }[] = [
 const steps = ['要件を読んだ', '実装した', 'UIで確認した', 'テストを追加・実行した']
 function App() {
   const reduceMotion = useReducedMotion()
+  const shell = useRef<HTMLDivElement>(null)
+  const header = useRef<HTMLElement>(null)
   const workspace = useRef<HTMLDivElement>(null)
   const dragging = useRef(false)
   const menuButton = useRef<HTMLButtonElement>(null)
@@ -35,12 +38,25 @@ function App() {
   const [selected, setSelected] = useState(() => {
     try {
       const saved = localStorage.getItem('hook-lab-selected-chapter');
-      return saved && (saved === 'chapter-00' || lessons.some(lesson => lesson.id === saved)) ? saved : 'chapter-00';
+      return saved && (saved === 'chapter-00' || saved === 'express-tutorial' || lessons.some(lesson => lesson.id === saved)) ? saved : 'chapter-00';
     } catch { return 'chapter-00'; }
   })
   useEffect(() => {
     try { localStorage.setItem('hook-lab-selected-chapter', selected); } catch { /* Continue in memory. */ }
   }, [selected])
+  useEffect(() => {
+    function updateMenuOffset() {
+      const visibleHeight = Math.max(0, header.current?.getBoundingClientRect().bottom ?? 0)
+      shell.current?.style.setProperty('--menu-top', `${visibleHeight}px`)
+    }
+    updateMenuOffset()
+    window.addEventListener('scroll', updateMenuOffset, { passive: true })
+    window.addEventListener('resize', updateMenuOffset)
+    return () => {
+      window.removeEventListener('scroll', updateMenuOffset)
+      window.removeEventListener('resize', updateMenuOffset)
+    }
+  }, [])
   const [progress, setProgress] = useState(readProgress)
   const [storageError, setStorageError] = useState(false)
   const lesson = lessons.find(l => l.id === selected) ?? lessons[0]
@@ -79,26 +95,28 @@ function App() {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(updated)); setStorageError(false) }
     catch { setStorageError(true) }
   }
-  return <MotionConfig reducedMotion="user" transition={{ duration: reduceMotion ? 0 : 0.45, ease: 'easeInOut' }}><div className="app-shell">
-    <header className="topbar"><button ref={menuButton} className="sidebar-toggle" aria-expanded={!sidebarCollapsed} aria-controls="curriculum-sidebar" aria-label={sidebarCollapsed ? 'メニューを開く' : 'メニューを閉じる'} title={sidebarCollapsed ? 'メニューを開く' : 'メニューを閉じる'} onClick={toggleSidebar}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3" /><path d="M9 4v16" /><path d={sidebarCollapsed ? 'm13 9 3 3-3 3' : 'm16 9-3 3 3 3'} /></svg></button><a className="brand" href="#main"><span className="brand-mark">h.</span>Hook & Build<span className="brand-label">LEARNING WORKSPACE</span></a><span className="local-indicator"><i />LOCAL LEARNING</span></header>
+  return <MotionConfig reducedMotion="user" transition={{ duration: reduceMotion ? 0 : 0.45, ease: 'easeInOut' }}><div ref={shell} className="app-shell">
+    <header ref={header} className="topbar"><button ref={menuButton} className="sidebar-toggle" aria-expanded={!sidebarCollapsed} aria-controls="curriculum-sidebar" aria-label={sidebarCollapsed ? 'メニューを開く' : 'メニューを閉じる'} title={sidebarCollapsed ? 'メニューを開く' : 'メニューを閉じる'} onClick={toggleSidebar}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3" /><path d="M9 4v16" /><path d={sidebarCollapsed ? 'm13 9 3 3-3 3' : 'm16 9-3 3 3 3'} /></svg></button><a className="brand" href="#main"><span className="brand-mark">h.</span>Hook & Build<span className="brand-label">LEARNING WORKSPACE</span></a><span className="local-indicator"><i />LOCAL LEARNING</span></header>
     <motion.div className={`layout ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`} initial={false} animate={{ '--sidebar-open': sidebarCollapsed ? 0 : 1 }}>
       {!sidebarCollapsed && <button className="sidebar-backdrop" aria-label="メニューの外側を押して閉じる" onClick={closeSidebar} />}
       <div className="sidebar-clip"  inert={sidebarCollapsed} aria-hidden={sidebarCollapsed}><motion.aside id="curriculum-sidebar" className="sidebar" aria-label="カリキュラム" initial={false} animate={{ opacity: sidebarCollapsed ? 0 : 1, visibility: 'visible', transitionEnd: { visibility: sidebarCollapsed ? 'hidden' : 'visible' } }} >
         <div className="eyebrow">YOUR LEARNING PATH</div><h2>小さくつくる。<br />深くわかる。</h2><p className="muted">React / Express / Testing</p>
         <div className="course-progress"><span>必須課題の進捗</span><strong>{completed}<small> / {requiredLessons.length}</small></strong><progress value={completed} max={requiredLessons.length} aria-label="完了した課題" /></div>
         <button className={`lesson-link intro-link ${selected === 'chapter-00' ? 'active' : ''}`} aria-current={selected === 'chapter-00' ? 'page' : undefined} onClick={() => setSelected('chapter-00')}>00 はじめに：カウンターで実演{progress['chapter-00'] === 4 && <span className="completion-badge">✓ 完了</span>}</button>
+        <button className={`lesson-link intro-link ${selected === 'express-tutorial' ? 'active' : ''}`} aria-current={selected === 'express-tutorial' ? 'page' : undefined} onClick={() => setSelected('express-tutorial')}>Expressチュートリアル</button>
         <nav aria-label="課題一覧">{levels.map((level, index) => <section className="level-group" data-level={level.id} key={level.id}>
           <div className="level-heading"><span>0{index + 1}</span><div><h3>{level.name}</h3><small>{level.description}</small></div></div>
           {lessons.filter(l => l.level === level.id).map((l, i) => <button key={l.id} className={`lesson-link ${selected === l.id ? 'active' : ''} ${progress[l.id] === 4 ? 'completed' : ''}`} aria-current={selected === l.id ? 'step' : undefined} onClick={() => setSelected(l.id)}><span className="lesson-number">{String(i + 1).padStart(2, '0')}</span><span>{l.title}</span>{progress[l.id] === 4 && <span className="completion-badge">✓ 完了</span>}<span aria-hidden="true">{selected === l.id ? '↗' : ''}</span></button>)}
         </section>)}</nav>
       </motion.aside></div>
       <main id="main">
-        {selected === 'chapter-00' ? <ChapterZero completed={progress['chapter-00'] === 4} onCompletedChange={(completed) => setProgress(p => ({ ...p, 'chapter-00': completed ? 4 : 0 }))} onContinue={() => setSelected(lessons[0].id)} /> : <>
+        {selected === 'chapter-00' ? <ChapterZero completed={progress['chapter-00'] === 4} onCompletedChange={(completed) => setProgress(p => ({ ...p, 'chapter-00': completed ? 4 : 0 }))} onContinue={() => setSelected(lessons[0].id)} /> : selected === 'express-tutorial' ? <ExpressTutorial onContinue={() => setSelected('basic-06')} /> : <>
 
         <div ref={workspace} className="work-grid" style={{ '--preview-width': previewWidth + 'fr', '--lesson-width': (100 - previewWidth) + 'fr' } as CSSProperties}>
           <motion.article className="lesson-card" key={lesson.id} initial={{ opacity: reduceMotion ? 1 : 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }}>
             <div className="card-top"><span className="badge green">{levels.find(l => l.id === lesson.level)?.name}</span><span className="muted">CHALLENGE {String(lessons.indexOf(lesson) + 1).padStart(2, '0')}</span></div>
             <h2>{lesson.title}</h2><p className="lesson-summary">{lesson.summary}</p><div className="tags">{lesson.hooks.map(h => <span key={h}>{h}</span>)}</div>
+            {lesson.id === 'basic-06' && <p><button onClick={() => setSelected('express-tutorial')}>Expressチュートリアルを開く →</button></p>}
             <NextAction lesson={lesson} current={current} />
             <section className="requirements lesson-section">
               <h3><span>01</span>実装する要件</h3>

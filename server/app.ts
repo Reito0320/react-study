@@ -1,4 +1,5 @@
 import express from 'express'
+import { createTutorialTasksRouter } from './tutorial-tasks.ts'
 import { currentResults } from './learning-results.ts'
 import type { ErrorRequestHandler } from 'express'
 import { createExerciseRouter } from './exercises.ts'
@@ -18,6 +19,7 @@ export function createApp() {
     catch (error) { response.status(500).json({ error: 'RESULTS_UNAVAILABLE', message: error instanceof Error ? `テスト項目または結果を取得できません。${error.message}` : 'テスト項目または結果を取得できません。' }); }
   });
   app.use('/api/reference', createReferenceRouter())
+  app.use('/api/tutorial/tasks', createTutorialTasksRouter())
   app.use('/api/tasks', createExerciseRouter())
   app.use((_, response) => {
     response.status(404).json({ error: 'NOT_FOUND', message: 'API が見つかりません。' })
