@@ -26,6 +26,7 @@ export default function Chapters() {
   const [taskList, setTaskList] = useState<TaskList[]>(localTaskList);
   const [searchInput, setSearchInput] = useState<string>('');
   const [category, setCategory] = useState<'all' | 'done' | 'notDone'>('all');
+  const [priority, setPriority] = useState<string>();
   const [sortStatus, setSortStatus] = useState<
     'default' | 'title' | 'new' | 'old'
   >('default');
@@ -262,13 +263,15 @@ export default function Chapters() {
       </div>
 
       {taskList.length === 0 && (
-        <p role="status">
+        <p role="status" aria-label="initInfo">
           タスクはまだありません。名前を入力して追加してみましょう。
         </p>
       )}
 
       {taskList.length > 0 && visibleTasks.length === 0 && (
-        <p role="status">該当するデータが存在しません。</p>
+        <p role="status" aria-label="notFoundInfo">
+          該当するデータが存在しません。
+        </p>
       )}
 
       <ul>
@@ -335,6 +338,11 @@ export default function Chapters() {
               >
                 {obj.isDone ? '✅' : '🔲'}
               </button>
+              {/* <select onChange={(e) => setPriority(e.target.value)}>
+                <option value="low">優先度:低い</option>
+                <option value="medium">優先度:普通</option>
+                <option value="high">優先度:高い</option>
+              </select> */}
               <li
                 role="listitem"
                 data-test-id={obj.id}

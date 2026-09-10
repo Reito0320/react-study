@@ -1,9 +1,4 @@
-import {
-  findAllByRole,
-  findByRole,
-  render,
-  screen,
-} from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it } from 'vitest';
 import Chapters from './chapters';
 import userEvent from '@testing-library/user-event';
@@ -290,13 +285,106 @@ describe('[basic-04] チャプター4：検索・絞り込み・並び替え', (
     expect(lastListItems).toHaveLength(1);
     expect(lastListItems[0]).toHaveTextContent(/^お皿を洗う$/);
   });
-  it.todo(
-    '[basic-04-02] タイトル順に並べた後に検索を消して追加順に戻すと元の順序になる',
-  );
-  it.todo('[basic-04-03] 並び替えても元のタスク配列を変更しない');
-  it.todo(
-    '[basic-04-04] 検索に一致するタスクがないとき該当なしの案内を表示する',
-  );
+  it('[basic-04-02] タイトル順に並べた後に検索を消して追加順に戻すと元の順序になる', async () => {
+    const mainInput = screen.getByRole('textbox', { name: 'input' });
+    const addButton = screen.getByRole('button', { name: 'add' });
+    const sortTitleButton = screen.getByRole('button', { name: 'sortTitle' });
+    const sortDefaultButton = screen.getByRole('button', {
+      name: 'sortDefault',
+    });
+    expect(sortTitleButton).toHaveTextContent(/^タイトル$/);
+    expect(sortDefaultButton).toHaveTextContent(/^追加順$/);
+
+    const user = userEvent.setup();
+    await user.type(mainInput, 'えほん');
+    await user.click(addButton);
+    await user.type(mainInput, 'おなか');
+    await user.click(addButton);
+    await user.type(mainInput, 'あひる');
+    await user.click(addButton);
+
+    let listItems = screen.getAllByRole('listitem');
+    expect(listItems[0]).toHaveTextContent(/^えほん$/);
+    expect(listItems[1]).toHaveTextContent(/^おなか$/);
+    expect(listItems[2]).toHaveTextContent(/^あひる$/);
+
+    await user.click(sortTitleButton);
+    listItems = await screen.findAllByRole('listitem');
+    expect(listItems[0]).toHaveTextContent(/^あひる$/);
+    expect(listItems[1]).toHaveTextContent(/^えほん$/);
+    expect(listItems[2]).toHaveTextContent(/^おなか$/);
+
+    await user.click(sortDefaultButton);
+    listItems = await screen.findAllByRole('listitem');
+    expect(listItems[0]).toHaveTextContent(/^えほん$/);
+    expect(listItems[1]).toHaveTextContent(/^おなか$/);
+    expect(listItems[2]).toHaveTextContent(/^あひる$/);
+  });
+  it('[basic-04-03] 並び替えても元のタスク配列を変更しない', async () => {
+    const mainInput = screen.getByRole('textbox', { name: 'input' });
+    const addButton = screen.getByRole('button', { name: 'add' });
+    const sortNewButton = screen.getByRole('button', { name: 'sortNew' });
+    const sortDefaultButton = screen.getByRole('button', {
+      name: 'sortDefault',
+    });
+    expect(sortNewButton).toHaveTextContent(/^new$/);
+    expect(sortDefaultButton).toHaveTextContent(/^追加順$/);
+
+    const user = userEvent.setup();
+    await user.type(mainInput, 'テスト3');
+    await user.click(addButton);
+    await user.type(mainInput, 'テスト2');
+    await user.click(addButton);
+    await user.type(mainInput, 'テスト1');
+    await user.click(addButton);
+
+    let listItems = screen.getAllByRole('listitem');
+    expect(listItems[0]).toHaveTextContent(/^テスト3$/);
+    expect(listItems[1]).toHaveTextContent(/^テスト2$/);
+    expect(listItems[2]).toHaveTextContent(/^テスト1$/);
+
+    await user.click(sortNewButton);
+    listItems = screen.getAllByRole('listitem');
+    expect(listItems[0]).toHaveTextContent(/^テスト1$/);
+    expect(listItems[1]).toHaveTextContent(/^テスト2$/);
+    expect(listItems[2]).toHaveTextContent(/^テスト3$/);
+
+    const data = localStorage.getItem('taskList');
+    const localData = data ? JSON.parse(data) : [];
+    expect(localData).toHaveLength(3);
+
+    expect(localData[0].title).toBe('テスト3');
+    expect(localData[1].title).toBe('テスト2');
+    expect(localData[2].title).toBe('テスト1');
+  });
+  it('[basic-04-04] 検索に一致するタスクがないとき該当なしの案内を表示する', async () => {
+    const mainInput = screen.getByRole('textbox', { name: 'input' });
+    const addButton = screen.getByRole('button', { name: 'add' });
+    const searchInput = screen.getByRole('textbox', { name: 'searchInput' });
+    const sortNewButton = screen.getByRole('button', { name: 'sortNew' });
+    const sortDefaultButton = screen.getByRole('button', {
+      name: 'sortDefault',
+    });
+    expect(sortNewButton).toHaveTextContent(/^new$/);
+    expect(sortDefaultButton).toHaveTextContent(/^追加順$/);
+
+    const user = userEvent.setup();
+    await user.type(mainInput, 'テスト3');
+    await user.click(addButton);
+    await user.type(mainInput, 'テスト2');
+    await user.click(addButton);
+    await user.type(mainInput, 'テスト1');
+    await user.click(addButton);
+
+    const listItems = screen.getAllByRole('listitem');
+    expect(listItems[0]).toHaveTextContent(/^テスト3$/);
+    expect(listItems[1]).toHaveTextContent(/^テスト2$/);
+    expect(listItems[2]).toHaveTextContent(/^テスト1$/);
+
+    await user.type(searchInput, '問題集1');
+    const notFoundInfo = screen.getByRole('status', { name: 'notFoundInfo' });
+    expect(notFoundInfo).toHaveTextContent(/^該当するデータが存在しません。$/);
+  });
 });
 
 describe('[basic-05] チャプター5：期限と優先度を設定', () => {
