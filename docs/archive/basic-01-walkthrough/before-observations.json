@@ -1,0 +1,19 @@
+{
+  "phase": "before",
+  "capturedAt": "2026-09-07T02:52:56.297Z",
+  "observations": [
+    {
+      "operation": "スペース3文字を入力して追加",
+      "input": "",
+      "error": 0,
+      "emptyRows": 1,
+      "text": "My tasks\n学習者の実装エリア\nタスク名\n追加"
+    },
+    {
+      "operation": "前後空白ありのReactを学ぶ→Vitestで確かめるを追加",
+      "input": "",
+      "rows": [],
+      "text": "My tasks\n学習者の実装エリア\nタスク名\n追加\nReactを学ぶ\nVitestで確かめる"
+    }
+  ]
+}

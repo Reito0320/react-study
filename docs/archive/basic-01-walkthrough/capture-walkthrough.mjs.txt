@@ -1,0 +1,42 @@
+// 実演のUI確認を再現して、スクリーンショットと観測結果を残す。
+// 使い方: node scripts/capture-walkthrough.mjs before|after
+import { chromium } from 'playwright'
+import { access, mkdir, writeFile } from 'node:fs/promises'
+const phase = process.argv[2]
+if (!['before', 'after'].includes(phase)) throw new Error('before または after を指定してください')
+if (phase === 'before') {
+  const exists = await access('docs/walkthrough/before-observations.json').then(() => true, () => false)
+  if (exists) throw new Error('変更前の観測は保存済みです。履歴を保つため上書きしません。')
+}
+const browser = await chromium.launch({ channel: process.env.PLAYWRIGHT_CHANNEL || 'chrome' })
+try {
+  const context = await browser.newContext({ viewport: { width: 1440, height: 1080 }, deviceScaleFactor: 1 })
+  const page = await context.newPage()
+  await page.goto('http://127.0.0.1:5173')
+  await page.getByRole('button', { name: /チャプター1：タスク追加へ進む/ }).click()
+  const workspace = page.getByRole('region', { name: 'タスク管理プレビュー' })
+  const input = workspace.getByRole('textbox', { name: 'タスク名' })
+  const add = workspace.getByRole('button', { name: '追加', exact: true })
+  const observations = []
+  await input.fill('   ')
+  await add.click()
+  observations.push({ operation: 'スペース3文字を入力して追加', input: await input.inputValue(), error: await workspace.getByRole('alert').count(), emptyRows: await workspace.locator('.empty-state > div').count(), text: await workspace.innerText() })
+  await mkdir('docs/walkthrough/images', { recursive: true })
+  await workspace.screenshot({ path: `docs/walkthrough/images/${phase}-spaces.png` })
+  await input.fill('  Reactを学ぶ  ')
+  await add.click()
+  await input.fill('Vitestで確かめる')
+  await add.click()
+  observations.push({ operation: '前後空白ありのReactを学ぶ→Vitestで確かめるを追加', input: await input.inputValue(), rows: await workspace.getByRole('listitem').allTextContents(), text: await workspace.innerText() })
+  await page.screenshot({ path: `docs/walkthrough/images/${phase}-desktop.png`, fullPage: true })
+  if (phase === 'after') {
+    await page.getByText('最初の課題の実演ガイド', { exact: true }).click()
+    await page.locator('.walkthrough-guide').screenshot({ path: 'docs/walkthrough/images/after-guide.png' })
+    await page.setViewportSize({ width: 390, height: 844 })
+    await page.screenshot({ path: 'docs/walkthrough/images/after-mobile.png', fullPage: true })
+    observations.push({ operation: '390px幅でガイドを開く', horizontalOverflow: await page.evaluate(() => document.documentElement.scrollWidth > innerWidth) })
+  }
+  await writeFile(`docs/walkthrough/${phase}-observations.json`, JSON.stringify({ phase, capturedAt: new Date().toISOString(), observations }, null, 2) + '\n')
+  console.log(JSON.stringify(observations, null, 2))
+  await context.close()
+} finally { await browser.close() }

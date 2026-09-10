@@ -1,20 +1,141 @@
-import { describe, it } from 'vitest';
+import { findByRole, render, screen } from '@testing-library/react';
+import { beforeEach, describe, expect, it } from 'vitest';
+import Chapters from './chapters';
+import userEvent from '@testing-library/user-event';
 
-// 実装 → UI確認 → テストの順で進めます。
-// it.todoをitに変え、第二引数に本文を書いてください。書き方はチャプター0へ。
-// [ID]は画面との目印です。タイトルの変更は保存すると画面にも反映されます。
+// 1. chapters.tsxに機能を実装する。
+// 2. ブラウザで要件どおり動くことを確認する。
+// 3. it.todoをitに変え、第二引数にテスト本体を記述する。
+// [ID]と既存タイトルは画面の結果表示に使います。追加のテストはIDなしで自由に書けます。
+// 書き方はチャプター0と docs/vitest-guide.md を参照。
 describe('[basic-01] チャプター1：タスクを追加して一覧に表示', () => {
-  it.todo('最初は空文字の状態で表示される');
-  it.todo('[basic-01-01] inputに文字を入力して追加ボタンを押すとタスクが追加され、inputが空文字になる');
-  it.todo('[basic-01-02] inputに文字を入力せずに追加ボタンを押すとerror messageが表示され、タスクも追加されない。');
-  it.todo('[basic-01-03] 前後の空白を除いて追加し、同名の2件にも異なるIDを付けて追加順に表示する');
+  beforeEach(() => {
+    render(<Chapters />);
+  });
+  it('最初は空文字の状態で表示される', () => {
+    const input = screen.getByRole('textbox', { name: 'input' });
+    expect(input).toHaveValue('');
+  });
+
+  it('[basic-01-01] inputに文字を入力して追加ボタンを押すとタスクが追加され、inputが空文字になる', async () => {
+    const input = screen.getByRole('textbox', { name: 'input' });
+    const addButton = screen.getByRole('button', { name: 'add' });
+
+    const user = userEvent.setup();
+    await user.type(input, '筋トレ');
+    expect(input).toHaveValue('筋トレ');
+    await user.click(addButton);
+    const taskTitle = await screen.findByText('筋トレ');
+    expect(taskTitle).toBeInTheDocument();
+    expect(input).toHaveValue('');
+  });
+
+  it('[basic-01-02] inputに文字を入力せずに追加ボタンを押すとerror messageが表示され、タスクも追加されない。', async () => {
+    const addButton = screen.getByRole('button', { name: 'add' });
+
+    const user = userEvent.setup();
+    await user.click(addButton);
+
+    const errorMessage = await screen.findByRole('alert');
+    expect(errorMessage).toHaveTextContent(
+      'タスク名を入力してください。空白だけでは追加できません。',
+    );
+  });
+  it('[basic-01-03] 前後の空白を除いて追加し、同名の2件にも異なるIDを付けて追加順に表示する', async () => {
+    const input = screen.getByRole('textbox', { name: 'input' });
+    const addButton = screen.getByRole('button', { name: 'add' });
+
+    const user = userEvent.setup();
+    await user.type(input, ' こんにちは ');
+    await user.click(addButton);
+    await user.type(input, ' こんにちは ');
+    await user.click(addButton);
+
+    const items = screen.getAllByRole('listitem');
+    expect(items[0]).not.toHaveAttribute(
+      'data-test-id',
+      items[1].getAttribute('data-test-id'),
+    );
+    expect(items[0]).toHaveTextContent('こんにちは');
+    expect(items[1]).toHaveTextContent('こんにちは');
+  });
 });
 
+// 要件を実装 → ブラウザで確認 → it.todoをitに変えて第二引数にテスト本体を記述。
+// [ID]と既存タイトルは結果表示に使うため保持してください。追加テストはIDなしで自由に書けます。
+
 describe('[basic-02] チャプター2：編集と削除を実装', () => {
-  it.todo(
-    '[basic-02-01] 選択したタスクを編集して保存すると、そのIDのタイトルだけが更新される',
-  );
-  it.todo('[basic-02-02] 編集をキャンセルすると元のタイトルが維持される');
+  beforeEach(() => {
+    render(<Chapters />);
+  });
+
+  it('[basic-02-01] 選択したタスクを編集して保存すると、そのIDのタイトルだけが更新される', async () => {
+    /* そもそもある要素の取得 */
+    const mainInput = screen.getByRole('textbox', { name: 'input' });
+    const addButton = screen.getByRole('button', { name: 'add' });
+
+    /* userの操作 */
+    const user = userEvent.setup();
+    await user.type(mainInput, 'ご飯を作る');
+    await user.click(addButton);
+    await user.type(mainInput, '筋トレをする');
+    await user.click(addButton);
+
+    const items = screen.getAllByRole('listitem');
+    /* 追加したtask同士のidは違うものになっている */
+    expect(items[0]).not.toHaveAttribute(
+      'data-test-id',
+      items[1].getAttribute('data-test-id'),
+    );
+
+    expect(items[0]).toHaveTextContent(/^ご飯を作る$/);
+    expect(items[1]).toHaveTextContent(/^筋トレをする$/);
+    const firstItemId = items[0].getAttribute('data-test-id');
+    const secondItemId = items[1].getAttribute('data-test-id');
+
+    await user.click(items[0]);
+    const editInput = await screen.findByRole('textbox', { name: 'editInput' });
+    const editSaveButton = await screen.findByRole('button', {
+      name: 'editSaveButton',
+    });
+    await user.clear(editInput);
+    await user.type(editInput, '歯を磨く');
+    await user.click(editSaveButton);
+
+    const newItems = screen.getAllByRole('listitem');
+
+    expect(newItems).toHaveLength(2);
+    expect(newItems[0]).toHaveTextContent(/^歯を磨く$/);
+    expect(newItems[0]).toHaveAttribute('data-test-id', firstItemId);
+    expect(newItems[1]).toHaveTextContent(/^筋トレをする$/);
+    expect(newItems[1]).toHaveAttribute('data-test-id', secondItemId);
+  });
+  it('[basic-02-02] 編集をキャンセルすると元のタイトルが維持される', async () => {
+    /* そもそもある要素の取得 */
+    const mainInput = screen.getByRole('textbox', { name: 'input' });
+    const addButton = screen.getByRole('button', { name: 'add' });
+
+    /* userの操作 */
+    const user = userEvent.setup();
+    await user.type(mainInput, '顔を洗う');
+    await user.click(addButton);
+    await user.type(mainInput, '走る');
+    await user.click(addButton);
+
+    const listItem = screen.getAllByRole('listitem');
+    expect(listItem[0]).toHaveTextContent(/^顔を洗う$/);
+    expect(listItem[1]).toHaveTextContent(/^走る$/);
+
+    await user.click(listItem[0]);
+    const editInput = await screen.findByRole('textbox', { name: 'editInput' });
+    expect(editInput).toHaveValue('顔を洗う');
+    await user.clear(editInput);
+    await user.type(editInput, '歯を磨く');
+    expect(editInput).toHaveValue('歯を磨く');
+
+    await user.click(listItem[1]);
+    expect(editInput).toHaveValue('歯を磨く');
+  });
   it.todo('[basic-02-03] 空白のみのタイトルでは保存できず、理由が表示される');
   it.todo('[basic-02-04] 同名タスクが2件あっても指定したIDの1件だけを削除する');
 });

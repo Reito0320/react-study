@@ -1,0 +1,53 @@
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { expect, it } from 'vitest';
+import TaskWorkspace from './TaskWorkspace';
+
+// basic-01: 実装 → ブラウザで確認した後に、その操作をテストへ移した実演。
+it('前後空白を除いて2件を追加し、入力欄を空にして追加順で表示する', async () => {
+  const user = userEvent.setup();
+  render(<TaskWorkspace />);
+  const input = screen.getByRole('textbox', { name: 'タスク名' });
+  const addButton = screen.getByRole('button', { name: '追加' });
+
+  await user.type(input, '  Reactを学ぶ  ');
+  await user.click(addButton);
+  expect(input).toHaveValue('');
+  expect(screen.getByRole('listitem').textContent).toBe('Reactを学ぶ');
+
+  await user.type(input, 'Vitestで確かめる');
+  await user.click(addButton);
+  expect(screen.getAllByRole('listitem').map((item) => item.textContent)).toEqual([
+    'Reactを学ぶ', 'Vitestで確かめる',
+  ]);
+  expect(input).toHaveValue('');
+});
+
+it.each(['', '   ', '　'])('空文字・空白のみの入力 %j ではタスクを追加せず理由を示す', async (title) => {
+  const user = userEvent.setup();
+  render(<TaskWorkspace />);
+  const input = screen.getByRole('textbox', { name: 'タスク名' });
+  if (title) await user.type(input, title);
+  await user.click(screen.getByRole('button', { name: '追加' }));
+
+  expect(screen.queryAllByRole('listitem')).toHaveLength(0);
+  expect(screen.getByRole('alert')).toHaveTextContent('タスク名を入力してください');
+  expect(input).toHaveAttribute('aria-invalid', 'true');
+  expect(input).toHaveAccessibleDescription('タスク名を入力してください。空白だけでは追加できません。');
+});
+
+it('入力エラーを直して追加すると、エラーが消えて次の操作を続けられる', async () => {
+  const user = userEvent.setup();
+  render(<TaskWorkspace />);
+  const input = screen.getByRole('textbox', { name: 'タスク名' });
+  const addButton = screen.getByRole('button', { name: '追加' });
+
+  await user.click(addButton);
+  expect(screen.getByRole('alert')).toBeVisible();
+  await user.type(input, '修正して追加');
+  await user.click(addButton);
+
+  expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  expect(screen.getByRole('listitem')).toHaveTextContent('修正して追加');
+  expect(input).toHaveAttribute('aria-invalid', 'false');
+});
