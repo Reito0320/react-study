@@ -1,12 +1,11 @@
 import { Router } from 'express';
 import type { RequestHandler } from 'express';
-import { createLocalPrisma } from './db/client';
+import { createLocalPrisma } from './db/client.ts';
 
 // TODO: 課題の要件に従って各ハンドラーを実装し、UI で確認した後にテストを追加します。
 // 初期状態ではデータを保存しません。完成済みデモは reference.ts にあります。
-export function createExerciseRouter() {
+export function createExerciseRouter(prisma = createLocalPrisma()) {
   const router = Router();
-  const prisma = createLocalPrisma();
 
   const getAllTaskList: RequestHandler = async (_, response) => {
     try {

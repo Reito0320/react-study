@@ -1,29 +1,18 @@
 // @vitest-environment node
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import type { Server } from 'node:http';
-import type { AddressInfo } from 'node:net';
-import { createApp } from './app.ts';
+import { createApiTestServer } from './testing/api-test-server.ts';
 
-// 準備済み：各テストで空のAPIサーバーを起動し、終了後に片付けます。
-// npm run devは不要。普段の画面のデータには触れません。
-// fetchには相対URLではなく `${origin}/api/tasks` を渡してください。
-let server: Server;
+// DB保存へ移行後も、学習用DBを変更しないため専用サーバーを使います。
+// 初回だけ npm run db:test:setup。各テストは空の専用領域から開始します。
+let api: Awaited<ReturnType<typeof createApiTestServer>> | undefined;
 let origin: string;
 beforeEach(async () => {
-  server = createApp().listen(0, '127.0.0.1');
-  await new Promise<void>((resolve, reject) => {
-    server.once('listening', resolve);
-    server.once('error', reject);
-  });
-  origin = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
-});
+  api = await createApiTestServer();
+  origin = api.origin;
+}, 30000);
 afterEach(async () => {
-  if (server?.listening) {
-    await new Promise<void>((resolve, reject) => {
-      server.close((error) => (error ? reject(error) : resolve()));
-    });
-  }
-});
+  try { await api?.close(); } finally { api = undefined; }
+}, 30000);
 
 // 要件を実装 → ブラウザで確認 → it.todoをitに変えて第二引数にテスト本体を記述。
 // [ID]と既存タイトルは結果表示に使うため保持してください。追加テストはIDなしで自由に書けます。

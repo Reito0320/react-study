@@ -7,7 +7,7 @@ export default function PersistenceGuide() {
       <li><code>prisma/schema.prisma</code>：自分のタスクの型に合わせたモデルを追加します。モデル名・項目名は自由です。</li>
       <li><code>server/db/task-service.ts</code> を新規作成：一覧・追加・更新・削除をPrismaで書きます。参考は同じフォルダのpractice-service.tsです。</li>
       <li><code>server/exercises.ts</code>：配列操作をサービスの呼び出しに変更。<code>await</code>で結果を待ち、今と同じJSONを返します。</li>
-      <li><code>server/index.ts → server/app.ts → server/exercises.ts</code>：DBを使うサービスを引数で渡す形にします。テストでは別DBのサービスを渡せるようにします。</li>
+      <li><code>server/index.ts → server/app.ts → server/exercises.ts</code>：接続先の受け渡しは準備済みです。Routerが受け取ったPrismaをクエリに使います。</li>
       <li>UIでCRUD → API再起動 → 再取得。Studioでも同じデータを確認します。</li>
     </ol>
     <pre><code>{`npm run db:migrate -- --name add_task
@@ -19,10 +19,12 @@ npm run dev`}</code></pre>
       <p>今のAPIのJSON形式を維持します。DBとReactで項目名・日付の表現が違う場合は、APIで変換します。</p>
     </div></details>
     <details className="reference"><summary>テスト用DBの準備と実行</summary><div className="reference-content">
-      <p><code>docs/task-persistence.md</code> の手順で専用DBと接続設定を用意します。ポートを変えただけではDBは分離されません。</p>
-      <p><code>server/task-persistence.test.ts</code> のTODOに、専用DBの接続・サーバー起動・検証・後片付けを書きます。既存のメモリ用テストの起動処理はそのまま流用できません。</p>
+      <p>初回だけ実行。.envの接続先から別名のテスト用DBを自動作成します。.env.testは不要です。</p>
+      <pre><code>npm run db:test:setup</code></pre>
+      <p><code>server/task-persistence.test.ts</code> はoriginと起動・終了処理を用意済み。TODOにfetchとexpectを書きます。</p>
+      <pre><code>{'await fetch(`${origin}/api/tasks`);\nawait restartApiServer();'}</code></pre>
+      <p>各テストは空から開始。再起動中のデータは保持し、テスト終了後の後片付けも自動です。</p>
       <pre><code>npm run test:learning -- basic-08</code></pre>
-      <p>TODOのままではDBに接続しません。再起動のテストは「保存 → サーバー終了 → 同じDBで起動 → GET」の順です。テスト後に作成したIDだけ削除します。</p>
     </div></details>
     <p>詳しい編集位置とテスト接続の例：<code>docs/task-persistence.md</code></p>
   </section>
