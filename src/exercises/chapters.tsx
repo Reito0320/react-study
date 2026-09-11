@@ -67,23 +67,33 @@ export default function Chapters() {
       return getSortStatusList(notDoneSortList);
     }
   };
-  const handleAddButton = () => {
+  const handleAddButton = async () => {
     const trimText = userInputTask.trim();
     if (!trimText)
       return setErrorMessage(
         'タスク名を入力してください。空白だけでは追加できません。',
       );
-    const newTask = {
-      id: crypto.randomUUID(),
-      title: trimText,
-      isDone: false,
-      createdAt: new Date(),
-    };
+
+    const res = await fetch('/api/tasks', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        id: crypto.randomUUID(),
+        title: trimText,
+        isDone: false,
+        createdAt: new Date(),
+      }),
+    });
+
+    if (!res.ok) throw new Error('task追加の通信に失敗しています。');
+    const { newTask } = await res.json();
+    if (newTask === null) throw new Error('データが追加されていません。');
+
     setTaskList((currentTasks) => [...currentTasks, newTask]);
     setUserInputTask('');
     setErrorMessage('');
   };
-  const handelSaveButton = () => {
+  const handelSaveButton = async () => {
     if (!userEditInput.trim())
       return setErrorMessage(
         '新しいタスク名を入力してください。空白だけでは編集できません。',
@@ -92,16 +102,28 @@ export default function Chapters() {
     const targetExists = taskList.some((task) => task.id === targetId);
     if (!targetExists) return setErrorMessage('該当するデータが存在しません。');
 
-    setTaskList(
-      taskList.map((task) =>
-        task.id === targetId ? { ...task, title: userEditInput.trim() } : task,
-      ),
-    );
+    const targetDataIsDone = taskList.find(
+      (task) => task.id === targetId,
+    )?.isDone;
+
+    const res = await fetch('/api/tasks/' + targetId, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title: userEditInput.trim(),
+        isDone: targetDataIsDone,
+      }),
+    });
+
+    if (!res.ok) throw new Error('task更新処理に失敗しています。');
+    const { newTaskList } = await res.json();
+
+    setTaskList(newTaskList);
     setTargetId('');
     setUserEditInput('');
     setErrorMessage('');
   };
-  const handelDeleteButton = () => {
+  const handelDeleteButton = async () => {
     const targetDataExists = taskList.some((obj) => obj.id === targetId);
     if (!targetDataExists)
       return setErrorMessage('該当するデータが存在しません。');
@@ -113,7 +135,13 @@ export default function Chapters() {
       targetTaskTitle + 'を削除してよろしいですか？',
     );
     if (!confirm) return;
-    setTaskList(taskList.filter((obj) => obj.id !== targetId));
+
+    const res = await fetch('/api/tasks/' + targetId, {
+      method: 'DELETE',
+    });
+    if (!res.ok) throw new Error('task削除の通信に失敗しています。');
+    const { newTaskList } = await res.json();
+    setTaskList(newTaskList);
     setTargetId('');
   };
   // 9/8 未実装
@@ -149,8 +177,19 @@ export default function Chapters() {
   };
 
   useEffect(() => {
-    localStorage.setItem('taskList', JSON.stringify(taskList));
-  }, [taskList, setTaskList]);
+    const getTaskList = async () => {
+      try {
+        const res = await fetch('/api/tasks');
+        if (!res.ok) throw new Error('tasks全件取得の通信に失敗しています。');
+        const { taskList } = await res.json();
+        console.log(taskList);
+        setTaskList(taskList);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    getTaskList();
+  }, []);
 
   const visibleTasks = getSearchTaskList();
 
