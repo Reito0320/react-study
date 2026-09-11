@@ -75,10 +75,7 @@ export default function Chapters() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        id: crypto.randomUUID(),
         title: trimText,
-        isDone: false,
-        createdAt: new Date(),
       }),
     });
 

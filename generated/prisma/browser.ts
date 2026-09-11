@@ -22,3 +22,8 @@ export * from './enums.js';
  * 
  */
 export type PracticeTask = Prisma.PracticeTaskModel
+/**
+ * Model Task
+ * 
+ */
+export type Task = Prisma.TaskModel

@@ -46,3 +46,8 @@ export { Prisma }
  * 
  */
 export type PracticeTask = Prisma.PracticeTaskModel
+/**
+ * Model Task
+ * 
+ */
+export type Task = Prisma.TaskModel
