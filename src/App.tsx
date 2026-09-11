@@ -10,6 +10,7 @@ import TestResultsPanel from './components/TestResultsPanel'
 import { NextAction } from './components/LearningGuide'
 import ChapterZero from './tutorial/ChapterZero'
 import ExpressTutorial from './tutorial/ExpressTutorial'
+import PrismaTutorial from './tutorial/PrismaTutorial'
 import './App.css'
 
 const levels: { id: Level; name: string; description: string }[] = [
@@ -38,7 +39,7 @@ function App() {
   const [selected, setSelected] = useState(() => {
     try {
       const saved = localStorage.getItem('hook-lab-selected-chapter');
-      return saved && (saved === 'chapter-00' || saved === 'express-tutorial' || lessons.some(lesson => lesson.id === saved)) ? saved : 'chapter-00';
+      return saved && (saved === 'chapter-00' || saved === 'express-tutorial' || saved === 'prisma-tutorial' || lessons.some(lesson => lesson.id === saved)) ? saved : 'chapter-00';
     } catch { return 'chapter-00'; }
   })
   useEffect(() => {
@@ -104,19 +105,21 @@ function App() {
         <div className="course-progress"><span>必須課題の進捗</span><strong>{completed}<small> / {requiredLessons.length}</small></strong><progress value={completed} max={requiredLessons.length} aria-label="完了した課題" /></div>
         <button className={`lesson-link intro-link ${selected === 'chapter-00' ? 'active' : ''}`} aria-current={selected === 'chapter-00' ? 'page' : undefined} onClick={() => setSelected('chapter-00')}>00 はじめに：カウンターで実演{progress['chapter-00'] === 4 && <span className="completion-badge">✓ 完了</span>}</button>
         <button className={`lesson-link intro-link ${selected === 'express-tutorial' ? 'active' : ''}`} aria-current={selected === 'express-tutorial' ? 'page' : undefined} onClick={() => setSelected('express-tutorial')}>Expressチュートリアル</button>
+        <button className={`lesson-link intro-link ${selected === 'prisma-tutorial' ? 'active' : ''}`} aria-current={selected === 'prisma-tutorial' ? 'page' : undefined} onClick={() => setSelected('prisma-tutorial')}>Prismaチュートリアル</button>
         <nav aria-label="課題一覧">{levels.map((level, index) => <section className="level-group" data-level={level.id} key={level.id}>
           <div className="level-heading"><span>0{index + 1}</span><div><h3>{level.name}</h3><small>{level.description}</small></div></div>
           {lessons.filter(l => l.level === level.id).map((l, i) => <button key={l.id} className={`lesson-link ${selected === l.id ? 'active' : ''} ${progress[l.id] === 4 ? 'completed' : ''}`} aria-current={selected === l.id ? 'step' : undefined} onClick={() => setSelected(l.id)}><span className="lesson-number">{String(i + 1).padStart(2, '0')}</span><span>{l.title}</span>{progress[l.id] === 4 && <span className="completion-badge">✓ 完了</span>}<span aria-hidden="true">{selected === l.id ? '↗' : ''}</span></button>)}
         </section>)}</nav>
       </motion.aside></div>
       <main id="main">
-        {selected === 'chapter-00' ? <ChapterZero completed={progress['chapter-00'] === 4} onCompletedChange={(completed) => setProgress(p => ({ ...p, 'chapter-00': completed ? 4 : 0 }))} onContinue={() => setSelected(lessons[0].id)} /> : selected === 'express-tutorial' ? <ExpressTutorial onContinue={() => setSelected('basic-06')} /> : <>
+        {selected === 'chapter-00' ? <ChapterZero completed={progress['chapter-00'] === 4} onCompletedChange={(completed) => setProgress(p => ({ ...p, 'chapter-00': completed ? 4 : 0 }))} onContinue={() => setSelected(lessons[0].id)} /> : selected === 'express-tutorial' ? <ExpressTutorial onContinue={() => setSelected('basic-06')} /> : selected === 'prisma-tutorial' ? <PrismaTutorial onContinue={() => setSelected('basic-08')} /> : <>
 
         <div ref={workspace} className="work-grid" style={{ '--preview-width': previewWidth + 'fr', '--lesson-width': (100 - previewWidth) + 'fr' } as CSSProperties}>
           <motion.article className="lesson-card" key={lesson.id} initial={{ opacity: reduceMotion ? 1 : 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }}>
             <div className="card-top"><span className="badge green">{levels.find(l => l.id === lesson.level)?.name}</span><span className="muted">CHALLENGE {String(lessons.indexOf(lesson) + 1).padStart(2, '0')}</span></div>
             <h2>{lesson.title}</h2><p className="lesson-summary">{lesson.summary}</p><div className="tags">{lesson.hooks.map(h => <span key={h}>{h}</span>)}</div>
             {lesson.id === 'basic-06' && <p><button onClick={() => setSelected('express-tutorial')}>Expressチュートリアルを開く →</button></p>}
+            {['basic-07', 'basic-08'].includes(lesson.id) && <p><button onClick={() => setSelected('prisma-tutorial')}>Prismaチュートリアルを開く →</button></p>}
             <NextAction lesson={lesson} current={current} />
             <section className="requirements lesson-section">
               <h3><span>01</span>実装する要件</h3>

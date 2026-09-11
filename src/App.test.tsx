@@ -31,7 +31,11 @@ it('enforces the sequence, persists progress, and invalidates later steps on can
   expect(screen.getByRole('button', { name: /次の課題へ/ })).toBeDisabled()
 })
 it('reports failed persistence but lets the learner continue in memory', async () => {
-  vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => { throw new Error('quota') })
+  const setItem = Storage.prototype.setItem
+  vi.spyOn(Storage.prototype, 'setItem').mockImplementation(function (this: Storage, key, value) {
+    if (key === STORAGE_KEY) throw new Error('quota')
+    setItem.call(this, key, value)
+  })
   const user = userEvent.setup()
   renderLesson()
   await user.click(screen.getByRole('checkbox', { name: stepNames[0] }))
@@ -101,7 +105,7 @@ it('opens the Prisma chapters and preserves existing progress', async () => {
   render(<App />)
   await user.click(screen.getByRole('button', { name: /PostgreSQLとPrismaをローカルで起動/ }))
   await waitFor(() => expect(screen.getByRole('heading', { name: 'PostgreSQL・Prisma学習ガイド' })).toBeVisible())
-  expect(screen.getByText('npm run db:apply')).toBeVisible()
+  expect(screen.getByText(/npm run db:apply[\s\S]*npm run db:check/, { selector: 'code' })).toBeVisible()
   await user.click(screen.getByRole('button', { name: /Prismaのモックテストを書く/ }))
   await waitFor(() => expect(screen.getByRole('heading', { name: 'Prismaのモックテストを書く' })).toBeVisible())
   expect(screen.getByRole('button', { name: /編集と削除を実装/ })).toHaveTextContent('完了')

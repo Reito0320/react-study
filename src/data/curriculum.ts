@@ -71,9 +71,15 @@ export const lessons: Lesson[] = [
   },
   {
     id: 'basic-07', level: 'basic', title: 'PostgreSQLとPrismaをローカルで起動', summary: 'ローカルに教材用DBを作り、Prismaで保存・取得する。', hooks: ['PostgreSQL', 'Prisma', 'マイグレーション'], file: 'prisma/schema.prisma + server/db/practice-service.ts',
-    requirements: ['既存のローカルPostgreSQLに教材専用DBを作り、.envを接続先に合わせる。', 'npm run db:apply → npm run db:generate → npm run db:checkの順に保存と取得を確認する。', 'npm run db:demoでタスクを保存し、再実行して同じIDとタイトルを取得する。'],
-    checks: ['直接インストールしたPostgreSQLで保存・再取得でき、Prisma StudioでPracticeTaskを確認できる。', 'プログラムを終了しても保存したタスクを同じIDで再取得できる。'],
+    requirements: ['自分のPCでPostgreSQLを用意し、学習用DBと.envの接続先を設定する。', 'npm run db:apply → npm run db:generate → npm run db:checkの順に保存と取得を確認する。', 'npm run db:demoでタスクを保存し、再実行して同じIDとタイトルを取得する。'],
+    checks: ['自分のPostgreSQLで保存・再取得でき、Prisma StudioでPracticeTaskを確認できる。', 'プログラムを終了しても保存したタスクを同じIDで再取得できる。'],
     testHints: ['提供済みのURL検証と実DBへの疎通確認は別の検証。', 'mockテストの成功だけではマイグレーションや保存の成功は確認できない。'], reference: refs.middleware,
+  },
+  {
+    id: 'basic-08', level: 'basic', title: 'タスクAPIをPrismaで永続化する', summary: '基礎6のメモリ保存をDB保存に置き換え、今のUIをそのまま使う。', hooks: ['Prisma CRUD', 'async / await', '依存性注入'], file: 'prisma/schema.prisma + server/db/task-service.ts（新規） + server/exercises.ts + server/app.ts + server/index.ts',
+    requirements: ['自分のタスク設計に合わせてPrismaモデルを定義し、マイグレーションを適用する。', 'GET・POST・PATCH・DELETEの保存処理をPrismaに置き換える。', 'URLと返すJSONの形を維持し、存在しないIDは404、DB障害は成功として返さない。', 'API再起動後も追加・編集・完了状態・削除が維持される。', 'テスト用DBを学習用DBと分け、テスト専用サーバーに接続先を渡す。'],
+    checks: ['UIから追加したタスクをStudioでも確認できる。', '編集・完了切替後にAPIを再起動しても同じ内容を取得できる。', '削除後にAPIを再起動してもタスクが戻らない。', 'DB停止時にエラーを表示し、通信中が終了する。'],
+    testHints: ['server/task-persistence.test.tsのTODOを実装する。テスト用DBへマイグレーションしてから実行。', 'HTTPサーバーだけ作り直し、同じDBから再取得して永続化を検証する。'], reference: refs.middleware,
   },
   {
     id: 'intermediate-01', level: 'intermediate', title: '状態遷移をreducerに整理', summary: '追加・編集・削除・完了のルールを集約する。', hooks: ['useReducer'], file: workspace,

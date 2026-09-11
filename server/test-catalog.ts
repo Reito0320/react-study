@@ -39,7 +39,7 @@ export function parseTestCatalog(source: string, filename: string): Record<strin
 export async function readTestCatalog() {
   const root = fileURLToPath(new URL('../', import.meta.url));
   const catalog: Record<string, TestRequirement[]> = {};
-  for (const name of ['src/exercises/chapters.test.tsx', 'server/exercises.test.ts', 'server/prisma.test.ts']) {
+  for (const name of ['src/exercises/chapters.test.tsx', 'server/exercises.test.ts', 'server/prisma.test.ts', 'server/task-persistence.test.ts']) {
     const parsed = parseTestCatalog(await readFile(resolve(root, name), 'utf8'), name);
     for (const [chapter, entries] of Object.entries(parsed)) {
       const previous = catalog[chapter] ?? [];

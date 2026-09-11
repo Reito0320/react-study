@@ -26,3 +26,10 @@ it('includes Prisma reference tests and learner TODOs in the live catalog', asyn
     'intermediate-07-04', 'intermediate-07-05',
   ])
 })
+
+it('registers the five persistence requirements for chapter eight', async () => {
+  const catalog = await readTestCatalog()
+  expect(catalog['basic-08'].map(entry => entry.id)).toEqual([
+    'basic-08-01', 'basic-08-02', 'basic-08-03', 'basic-08-04', 'basic-08-05',
+  ])
+})
