@@ -20,7 +20,7 @@ export function NextAction({ lesson, current }: { lesson: Lesson; current: numbe
     <div className="eyebrow">YOUR NEXT ACTION</div>
     {lesson.id === 'basic-06' && <div className="api-test-setup">
       <h3>APIテストは専用サーバーで実行</h3>
-      <p><code>server/exercises.test.ts</code> を編集します。起動・終了の準備は記述済み。基礎6のメモリ実装では各テストが空から始まります。基礎8でDBへ移す際は、テスト用DBの接続と後片付けに変更します。</p>
+      <p><code>server/exercises.test.ts</code> を編集します。起動・終了の準備は記述済み。基礎6はDBなしでテストできます。基礎8のDBテストでは、初回に npm run db:test:setup を実行してください。</p>
       <pre><code>{'const res = await fetch(`${origin}/api/tasks`);'}</code></pre>
       <p>Nodeのfetchは相対URLを使えないため、POST・PATCH・DELETEにも <code>origin</code> を付けます。同じAPI実装を別ポートで起動するので、開発サーバーやダミーAPIへの接続は不要です。</p>
       <pre><code>npm test -- server/exercises.test.ts -t basic-06</code></pre>

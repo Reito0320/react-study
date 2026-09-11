@@ -25,13 +25,11 @@ npm run db:generate
 
 ## 3. APIを接続する
 
-`server/exercises.ts` の `createExerciseRouter` にサービスを受け取る引数を追加します。各ハンドラー内の配列操作を `await service.…()` に置き換えます。
+Prismaを外から受け取る接続部分は準備済みです。`server/exercises.ts` の各ハンドラーで、受け取ったPrismaを使って配列操作をDBクエリに置き換えます。必要ならサービス関数へ切り出して構いません。
 
 今のAPIで決めたレスポンス形式を維持します。一覧を返す更新・削除は、処理後にDBから一覧を再取得します。
 
-`server/app.ts` の `createApp` も引数を受け取り、Routerへ渡します。`server/index.ts` で `createLocalPrisma()` と `createTaskService(db)` を作り、createAppへ渡します。DBクライアントをリクエストごとに生成・切断しないでください。サーバー終了時に切断します。
-
-この変更に伴い、既存の `createApp()` 呼び出し箇所も更新します。API単体テストにはモックまたは専用DBのサービスを渡し、引数なしで学習用DBへ接続する設計は避けます。
+`createApp(prisma)` → `createExerciseRouter(prisma)` の順でクライアントを渡します。基礎8に進んだら、`server/exercises.ts` で `createLocalPrisma` を `./db/client.ts` からimportし、引数を `prisma = createLocalPrisma()` に変更して `void prisma` を削除します。これで通常起動は学習用DB、テストは渡された専用DBを使います。テスト用クライアントを受け取った場合、Router内で別のクライアントを作り直さず、そのまま使います。
 
 ReactはGETで初期一覧を取得します。古いlocalStorageを読む初期化やキャンセル時の一覧復元は外し、キャンセルは編集中の入力を破棄する処理にします。DateTimeはJSONで文字列になるため、自分の型定義も通信後の表現と整合させます。
 
@@ -39,28 +37,46 @@ ReactはGETで初期一覧を取得します。古いlocalStorageを読む初期
 
 `npm run dev` で追加・編集・完了切替 → API終了・再起動 → 再取得。値が残ることを確認します。削除したタスクは再起動しても戻らないこと、Studioで同じTaskが見えることも確認します。
 
-## 5. 最初にテスト用DBを分ける
+## 5. テストの準備は最初に1コマンド
 
-`server/task-persistence.test.ts` が課題のテストファイルです。まだTODOなので、接続・起動処理もこれから書きます。
-
-1. 学習用DBと異なる `hook_build_test` を作成します。ホスト・ポート・ユーザーは自分の環境に合わせます。
-2. Git管理外の `.env.test` に専用DBの `DATABASE_URL` と同じ値の `TEST_DATABASE_URL` を設定します。パスワードはコミットしません。
-3. テスト用DBへマイグレーションを適用します。既存の環境変数を外して.env.testを読み込む例です。
+PostgreSQLが起動し、学習用DBの `.env` が設定済みなら実行します。
 
 ```sh
-env -u DATABASE_URL -u TEST_DATABASE_URL node --env-file=.env.test node_modules/prisma/build/index.js migrate deploy
+npm run db:test:setup
 ```
 
-4. テストファイルの先頭で `.env.test` を明示的に読み、`TEST_DATABASE_URL` が未設定なら失敗させます。学習用URLへのフォールバックは作りません。接続前にDB名が `hook_build_test` であることを検証します。
-5. `PrismaPg` にそのURLを渡してPrismaClientを作り、サービス → createAppへ渡します。構造は `server/db/client.ts` が参考です。
-6. `listen(0, '127.0.0.1')` で専用HTTPサーバーを起動し、実ポートをoriginに設定。通信先は `fetch(`${origin}/api/tasks`)` です。
+同じホスト・ポート・ユーザーで、学習用DB名に `_test` を付けたDBを自動作成し、このプロジェクトのマイグレーションを適用します。例：`hook_build` → `hook_build_test`。`.env` の書き換えや `.env.test` の作成は不要です。DBがあれば再利用するので再実行できます。スキーマ変更後は先にマイグレーションと `npm run db:generate` を実行してください。
 
-**HTTPサーバーの別ポート起動だけでは、DBは分かれません。** 基礎6の `server/exercises.test.ts` もDB化後は接続先を注入するように更新してください。DBを使わない既存テストにはモックを渡します。
+DB作成権限がない場合は、自分の管理するPostgreSQLにその名前のDBを一度作成してから再実行します。別ユーザーで接続したい場合だけ `TEST_DATABASE_URL` を `.env` またはシェルに設定できます。DB名は学習用DB名 + `_test` に限定します。
 
-テストでは自分が作ったIDを記録し、終了時にそのIDだけ削除します。再起動検証は「POST → HTTPサーバーを閉じる → 同じDBで新しいアプリを起動 → GET」の順。途中でデータを削除すると永続化を検証できません。最後にHTTPサーバーとDBを切断します。
+### テストファイルで書くこと
+
+`server/task-persistence.test.ts` には、起動・終了・origin・再起動関数が用意済みです。TODOをitに変えて、API操作とexpectだけを書きます。
+
+```ts
+// テストの本文で使用（レスポンスの検証は自分で書く）
+const res = await fetch(`${origin}/api/tasks`);
+const data = await res.json();
+
+// POSTなどで保存した後に使う。再起動後は更新されたoriginでGETする。
+await restartApiServer();
+```
+
+各テストは新しい空の保存領域から始まります。HTTPサーバーの再起動中はデータが残り、テスト終了時にその領域だけを削除します。モデル名・項目名によるdeleteManyは不要です。PrismaインスタンスやDELETEによる後片付けを自分で追加しないでください。
 
 ```sh
 npm run test:learning -- basic-08
 ```
 
-5件のTODOは未実装です。実DBの永続化テストと、中級7のモックテストは別の検証です。
+TODOは未実装扱いでDBへ接続しません。書きかけの確認にexpectがなければ、保存できたことを検証したとは言えません。
+
+### 仕組みを知りたいとき
+
+- `scripts/setup-test-db.ts`：別DBを準備する入口。
+- `server/testing/test-database.ts`：テストごとのschema（DB内の専用領域）を作り、現在のマイグレーションを適用・後片付け。
+- `server/testing/api-test-server.ts`：専用DBのPrismaをcreateApp → Routerへ渡し、空きポートでHTTPサーバーを起動。再起動ではExpressとPrismaを作り直し、保存領域は維持。
+- `server/db/client.ts`：引数の接続URL・schemaをPrismaに適用。通常起動はこれまでどおり.envを使う。
+
+DBの分離とサーバー起動は教材側で準備済みです。学習者はAPIの保存処理と、その動作の検証に集中できます。基礎6のテストはDB不要の構成です。DB化した後も実行する場合は、`server/task-persistence.test.ts` のimport・beforeEach・afterEach・originの準備を `server/exercises.test.ts` にも使い、既存のHTTPサーバー起動処理を置き換えます。
+
+接続できない場合はDBの起動と.envを確認。マイグレーション失敗は権限と `prisma/migrations` を確認します。テストの強制終了では専用領域が残ることがありますが、次の実行とは別名なので学習データや次のテストには混ざりません。

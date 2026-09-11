@@ -95,3 +95,16 @@ npm run test:prisma
 ```
 
 保存を理解したら、中級7で `server/prisma.test.ts` のモックテストに進みます。
+
+## 基礎8のテスト用DB
+
+学習用DBへ接続できたら、初回だけ `npm run db:test:setup` を実行します。同じ接続先に「学習用DB名_test」を用意し、現在のマイグレーションを適用します。`.env.test` は不要です。
+
+`server/task-persistence.test.ts` に専用サーバーの起動・終了と `origin` が用意済みです。TODOをitに変え、fetchとexpectを書きます。`await restartApiServer()` で再起動できます。各テストの保存領域と後片付けは自動です。
+
+```sh
+npm run db:test:setup
+npm run test:learning -- basic-08
+```
+
+詳しくは [テストの準備](docs/task-persistence.md#5-テストの準備は最初に1コマンド) を参照してください。

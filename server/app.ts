@@ -1,4 +1,5 @@
 import express from 'express'
+import type { PrismaClient } from '../generated/prisma/client.ts'
 import { createTutorialTasksRouter } from './tutorial-tasks.ts'
 import { currentResults } from './learning-results.ts'
 import type { ErrorRequestHandler } from 'express'
@@ -6,7 +7,7 @@ import { createExerciseRouter } from './exercises.ts'
 import { createReferenceRouter, pipelineResult, ReferenceError } from './reference.ts'
 import type { PipelineState } from './reference.ts'
 
-export function createApp() {
+export function createApp(prisma?: PrismaClient) {
   const app = express()
   app.disable('x-powered-by')
   app.use(express.json({ limit: '100kb' }))
@@ -20,7 +21,7 @@ export function createApp() {
   });
   app.use('/api/reference', createReferenceRouter())
   app.use('/api/tutorial/tasks', createTutorialTasksRouter())
-  app.use('/api/tasks', createExerciseRouter())
+  app.use('/api/tasks', createExerciseRouter(prisma))
   app.use((_, response) => {
     response.status(404).json({ error: 'NOT_FOUND', message: 'API が見つかりません。' })
   })

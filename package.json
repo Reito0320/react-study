@@ -22,6 +22,7 @@
     "db:demo": "tsx scripts/db-demo.ts",
     "db:tutorial": "tsx scripts/prisma-tutorial.ts",
     "test:prisma": "vitest run server/prisma.test.ts",
+    "db:test:setup": "tsx scripts/setup-test-db.ts",
     "db:apply": "prisma migrate deploy"
   },
   "dependencies": {

@@ -77,9 +77,9 @@ export const lessons: Lesson[] = [
   },
   {
     id: 'basic-08', level: 'basic', title: 'タスクAPIをPrismaで永続化する', summary: '基礎6のメモリ保存をDB保存に置き換え、今のUIをそのまま使う。', hooks: ['Prisma CRUD', 'async / await', '依存性注入'], file: 'prisma/schema.prisma + server/db/task-service.ts（新規） + server/exercises.ts + server/app.ts + server/index.ts',
-    requirements: ['自分のタスク設計に合わせてPrismaモデルを定義し、マイグレーションを適用する。', 'GET・POST・PATCH・DELETEの保存処理をPrismaに置き換える。', 'URLと返すJSONの形を維持し、存在しないIDは404、DB障害は成功として返さない。', 'API再起動後も追加・編集・完了状態・削除が維持される。', 'テスト用DBを学習用DBと分け、テスト専用サーバーに接続先を渡す。'],
+    requirements: ['自分のタスク設計に合わせてPrismaモデルを定義し、マイグレーションを適用する。', 'GET・POST・PATCH・DELETEの保存処理をPrismaに置き換える。', 'URLと返すJSONの形を維持し、存在しないIDは404、DB障害は成功として返さない。', 'API再起動後も追加・編集・完了状態・削除が維持される。', '用意済みのテスト専用DB・originを使い、APIの再起動後も保存されることを検証する。'],
     checks: ['UIから追加したタスクをStudioでも確認できる。', '編集・完了切替後にAPIを再起動しても同じ内容を取得できる。', '削除後にAPIを再起動してもタスクが戻らない。', 'DB停止時にエラーを表示し、通信中が終了する。'],
-    testHints: ['server/task-persistence.test.tsのTODOを実装する。テスト用DBへマイグレーションしてから実行。', 'HTTPサーバーだけ作り直し、同じDBから再取得して永続化を検証する。'], reference: refs.middleware,
+    testHints: ['npm run db:test:setupで準備し、server/task-persistence.test.tsのTODOにfetchとexpectを書く。', 'HTTPサーバーだけ作り直し、同じDBから再取得して永続化を検証する。'], reference: refs.middleware,
   },
   {
     id: 'intermediate-01', level: 'intermediate', title: '状態遷移をreducerに整理', summary: '追加・編集・削除・完了のルールを集約する。', hooks: ['useReducer'], file: workspace,
