@@ -33,12 +33,13 @@ export default function ExpressTutorial({ onContinue }: { onContinue: () => void
       </div></details>
     </section>
     <section id="api-tests" className="walkthrough-step"><h2>04 テストで確かめる</h2>
-      <p>ターミナルBで実行。開発サーバーは不要です。各3件成功すればOK。</p>
+      <p>テスト自身が専用サーバーを起動・終了します。開発サーバーは不要。ターミナルBで実行し、各3件成功すればOK。</p>
       <pre><code>{`npm test -- server/tutorial-tasks.test.ts
 npm test -- src/tutorial/ApiTasks.test.tsx`}</code></pre>
       <details className="reference"><summary>APIテストの完成コード</summary><div className="reference-content"><p><code>server/tutorial-tasks.test.ts</code> 全体。自分で書く場合もこのファイルを編集します。</p><pre><code>{testSource}</code></pre><p>beforeAllでサーバー起動 → fetchで操作 → expectで検証 → afterAllで終了。</p></div></details>
     </section>
     <section className="walkthrough-step"><h2>05 チャプター6へ</h2>
+      <p>テストは <code>server/exercises.test.ts</code> に書きます。起動処理は用意済みなので、通信先に <code>{'`${origin}/api/tasks`'}</code> を使います。</p>
       <p>次は <code>server/exercises.ts</code> にAPIを書き、<code>src/exercises/chapters.tsx</code> から <code>/api/tasks</code> を呼びます。</p>
       <button className="primary" onClick={onContinue}>チャプター6：Expressで取得と保存へ進む →</button>
     </section>

@@ -105,7 +105,7 @@ it('opens the Prisma chapters and preserves existing progress', async () => {
   render(<App />)
   await user.click(screen.getByRole('button', { name: /PostgreSQLとPrismaをローカルで起動/ }))
   await waitFor(() => expect(screen.getByRole('heading', { name: 'PostgreSQL・Prisma学習ガイド' })).toBeVisible())
-  expect(screen.getByText('npm run db:apply')).toBeVisible()
+  expect(screen.getByText(/npm run db:apply[\s\S]*npm run db:check/)).toBeVisible()
   await user.click(screen.getByRole('button', { name: /Prismaのモックテストを書く/ }))
   await waitFor(() => expect(screen.getByRole('heading', { name: 'Prismaのモックテストを書く' })).toBeVisible())
   expect(screen.getByRole('button', { name: /編集と削除を実装/ })).toHaveTextContent('完了')

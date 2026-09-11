@@ -21,17 +21,16 @@ export function createExerciseRouter() {
   const getTargetIdTask: RequestHandler = (request, response) => {
     const targetId = request.params.id;
     const targetTask = taskList.find((task) => task.id === targetId);
-    if (targetTask) {
-      return response.json({
-        message: 'idからlistを一件取得する通信に成功しています。',
-        targetTask,
-      });
-    } else {
-      return response.json({
-        message: 'idからlistを一件取得する通信に失敗しています。',
+    if (!targetTask) {
+      return response.status(404).json({
+        message: 'idからtaskを一件取得できませんでした。',
         targetTask: null,
       });
     }
+    return response.json({
+      message: 'idからtaskを一件取得できました。',
+      targetTask,
+    });
   };
   const postTask: RequestHandler = (request, response) => {
     const newTask = request.body;
@@ -55,7 +54,7 @@ export function createExerciseRouter() {
     const targetId = request.params.id;
     const isExists = taskList.some((task) => task.id === targetId);
     if (!isExists)
-      return response.status(401).json({
+      return response.status(404).json({
         message: '該当するtaskが存在しませんでした。',
         newTaskList: taskList,
       });
@@ -75,7 +74,7 @@ export function createExerciseRouter() {
     const targetId = request.params.id;
     const isExists = taskList.some((task) => task.id === targetId);
     if (!isExists)
-      return response.status(401).json({
+      return response.status(404).json({
         message: '対象のtaskが見つらなかったのでtaskの削除ができませんでした。',
         newTaskList: taskList,
       });

@@ -15,15 +15,12 @@ type TaskList = {
   createdAt: Date;
 };
 
-const data = localStorage.getItem('taskList');
-const localTaskList = data ? JSON.parse(data) : [];
-
 export default function Chapters() {
   const [userInputTask, setUserInputTask] = useState<string>('');
   const [userEditInput, setUserEditInput] = useState<string>('');
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [targetId, setTargetId] = useState<string>();
-  const [taskList, setTaskList] = useState<TaskList[]>(localTaskList);
+  const [taskList, setTaskList] = useState<TaskList[]>([]);
   const [searchInput, setSearchInput] = useState<string>('');
   const [category, setCategory] = useState<'all' | 'done' | 'notDone'>('all');
   // 優先度の入力UIを実装するときに有効にする。
