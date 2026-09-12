@@ -184,11 +184,16 @@ describe('[basic-02] チャプター2：編集と削除を実装', () => {
     const editDeleteButton = await screen.findByRole('button', {
       name: 'editDeleteButton',
     });
-    const confirm = vi.spyOn(window, 'confirm').mockReturnValueOnce(false).mockReturnValueOnce(true);
+    const confirm = vi
+      .spyOn(window, 'confirm')
+      .mockReturnValueOnce(false)
+      .mockReturnValueOnce(true);
     try {
       await user.click(editDeleteButton);
       expect(screen.getAllByRole('listitem')).toHaveLength(1);
-      expect(screen.getByRole('textbox', { name: 'editInput' })).toBeInTheDocument();
+      expect(
+        screen.getByRole('textbox', { name: 'editInput' }),
+      ).toBeInTheDocument();
       await user.click(editDeleteButton);
       expect(confirm).toHaveBeenCalledTimes(2);
     } finally {
@@ -406,9 +411,19 @@ describe('[basic-05] チャプター5：期限と優先度を設定', () => {
 });
 
 describe('[intermediate-01] 中級1：状態遷移をreducerに整理', () => {
-  it.todo(
-    '[intermediate-01-01] 追加・編集・削除・完了のactionが基礎と同じ結果を返す',
-  );
+  beforeEach(() => {
+    render(<Chapters />);
+  });
+  it('[intermediate-01-01] 追加・編集・削除・完了のactionが基礎と同じ結果を返す', async () => {
+    const mainInput = screen.getByRole('textbox', { name: 'input' });
+    const addButton = screen.getByRole('button', { name: 'add' });
+
+    const user = userEvent.setup();
+    await user.type(mainInput, 'test1');
+    await user.click(addButton);
+    const listItem = await screen.findByRole('listitem');
+    expect(listItem).toHaveTextContent(/^test1$/);
+  });
   it.todo('[intermediate-01-02] 凍結した入力stateを変更せずに次の状態を返す');
   it.todo(
     '[intermediate-01-03] 存在しないIDへの操作では他のタスクを変更しない',

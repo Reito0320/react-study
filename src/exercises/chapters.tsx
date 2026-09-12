@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useReducer } from 'react';
+import { INITIAL, reducer, type Initial, type TaskList } from './reducer';
 
 /**
  * あなたの実装場所。課題を一つずつ、このコンポーネントに追加してください。
@@ -8,27 +9,19 @@ import { useEffect, useRef, useState } from 'react';
  * UIで確認した後、課題で指定されたテストファイルのit.todoに本文を追記します。
  */
 
-export type TaskList = {
-  id: string;
-  title: string;
-  isDone: boolean;
-  createdAt: Date;
-};
-
 export default function Chapters() {
-  const [userInputTask, setUserInputTask] = useState<string>('');
-  const [userEditInput, setUserEditInput] = useState<string>('');
-  const [searchInput, setSearchInput] = useState<string>('');
-  const [errorMessage, setErrorMessage] = useState<string>('');
-  const [targetId, setTargetId] = useState<string>();
-  const [taskList, setTaskList] = useState<TaskList[]>([]);
-  const [category, setCategory] = useState<'all' | 'done' | 'notDone'>('all');
-  // 優先度の入力UIを実装するときに有効にする。
-  // const [priority, setPriority] = useState<string>();
-  const [sortStatus, setSortStatus] = useState<
-    'default' | 'title' | 'new' | 'old'
-  >('default');
-  const prevEditInputRef = useRef<string>('');
+  const [state, dispatch] = useReducer(reducer, INITIAL);
+  const {
+    userInputTask,
+    userEditInput,
+    searchInput,
+    errorMessage,
+    targetId,
+    taskList,
+    category,
+    sortStatus,
+  }: Initial = state;
+
   const notIsDoneTaskLength = taskList.filter((obj) => !obj.isDone).length;
 
   const getSortStatusList = (data: TaskList[]) => {
@@ -67,9 +60,10 @@ export default function Chapters() {
   const handleAddButton = async () => {
     const trimText = userInputTask.trim();
     if (!trimText)
-      return setErrorMessage(
-        'タスク名を入力してください。空白だけでは追加できません。',
-      );
+      return dispatch({
+        type: 'ERROR',
+        payload: 'タスク名を入力してください。空白だけでは追加できません。',
+      });
 
     const res = await fetch('/api/tasks', {
       method: 'POST',
@@ -82,19 +76,22 @@ export default function Chapters() {
     if (!res.ok) throw new Error('task追加の通信に失敗しています。');
     const { newTask } = await res.json();
     if (newTask === null) throw new Error('データが追加されていません。');
-
-    setTaskList((currentTasks) => [...currentTasks, newTask]);
-    setUserInputTask('');
-    setErrorMessage('');
+    dispatch({ type: 'ADD', payload: newTask });
   };
   const handelSaveButton = async () => {
     if (!userEditInput.trim())
-      return setErrorMessage(
-        '新しいタスク名を入力してください。空白だけでは編集できません。',
-      );
+      return dispatch({
+        type: 'ERROR',
+        payload:
+          '新しいタスク名を入力してください。空白だけでは編集できません。',
+      });
 
     const targetExists = taskList.some((task) => task.id === targetId);
-    if (!targetExists) return setErrorMessage('該当するデータが存在しません。');
+    if (!targetExists)
+      return dispatch({
+        type: 'ERROR',
+        payload: '該当するデータが存在しません。',
+      });
 
     const targetDataIsDone = taskList.find(
       (task) => task.id === targetId,
@@ -112,15 +109,15 @@ export default function Chapters() {
     if (!res.ok) throw new Error('task更新処理に失敗しています。');
     const { newTaskList } = await res.json();
 
-    setTaskList(newTaskList);
-    setTargetId('');
-    setUserEditInput('');
-    setErrorMessage('');
+    dispatch({ type: 'SAVE', payload: newTaskList });
   };
   const handelDeleteButton = async () => {
     const targetDataExists = taskList.some((obj) => obj.id === targetId);
     if (!targetDataExists)
-      return setErrorMessage('該当するデータが存在しません。');
+      return dispatch({
+        type: 'ERROR',
+        payload: '該当するデータが存在しません。',
+      });
 
     const targetTaskTitle = userEditInput
       ? userEditInput
@@ -135,8 +132,7 @@ export default function Chapters() {
     });
     if (!res.ok) throw new Error('task削除の通信に失敗しています。');
     const { newTaskList } = await res.json();
-    setTaskList(newTaskList);
-    setTargetId('');
+    dispatch({ type: 'DELETE', payload: newTaskList });
   };
   // 9/8 未実装
   const handleCardClick = (currenttargetId: string) => {
@@ -144,14 +140,13 @@ export default function Chapters() {
       (obj) => obj.id === currenttargetId,
     )?.title;
     if (!targetDataTitle) return;
-
-    setTaskList((prev) =>
-      prev.map((obj) =>
-        obj.id === targetId ? { ...obj, title: prevEditInputRef.current } : obj,
-      ),
-    );
-    setUserEditInput(targetDataTitle);
-    setTargetId(currenttargetId);
+    dispatch({
+      type: 'CARDCLICK',
+      payload: {
+        title: targetDataTitle,
+        targetId: currenttargetId,
+      },
+    });
   };
   const handleCancelButton = async () => {
     const res = await fetch('api/tasks');
@@ -159,16 +154,23 @@ export default function Chapters() {
     const { taskList } = await res.json();
 
     if (!taskList) return;
-    setTaskList(taskList);
-    setTargetId('');
-    setUserEditInput('');
+    dispatch({ type: 'CANCEL', payload: taskList });
   };
-  const handleToggleButton = (selectedId: string) => {
-    setTaskList((prev) =>
-      prev.map((obj) =>
-        selectedId === obj.id ? { ...obj, isDone: !obj.isDone } : obj,
-      ),
-    );
+  const handleToggleButton = async (selectedId: string) => {
+    const targetTask = taskList.find((task) => task.id === selectedId);
+    if (!targetTask) return;
+
+    const res = await fetch('/api/tasks/' + selectedId, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title: targetTask.title,
+        isDone: !targetTask.isDone,
+      }),
+    });
+    if (!res.ok) throw new Error('完了状態の保存に失敗しました。');
+    const { newTaskList } = await res.json();
+    dispatch({ type: 'CHANGETASKLIST', payload: newTaskList });
   };
 
   useEffect(() => {
@@ -177,7 +179,7 @@ export default function Chapters() {
         const res = await fetch('/api/tasks');
         if (!res.ok) throw new Error('tasks全件取得の通信に失敗しています。');
         const { taskList } = await res.json();
-        setTaskList(taskList);
+        dispatch({ type: 'CHANGETASKLIST', payload: taskList });
       } catch (error) {
         console.error(error);
       }
@@ -212,27 +214,33 @@ export default function Chapters() {
             role="textbox"
             aria-label="searchInput"
             placeholder="検索したいタスク名を入力してください。"
-            onChange={(e) => setSearchInput(e.target.value)}
+            onChange={(e) =>
+              dispatch({ type: 'SEARCHINPUT', payload: e.target.value })
+            }
           />
         </div>
         <label>種類別表示</label>
         <div className="task-ui-actions">
           <button
-            onClick={() => setCategory('all')}
+            onClick={() => dispatch({ type: 'CATEGORYCHANGE', payload: 'all' })}
             role="button"
             aria-label="all"
           >
             全
           </button>
           <button
-            onClick={() => setCategory('done')}
+            onClick={() =>
+              dispatch({ type: 'CATEGORYCHANGE', payload: 'done' })
+            }
             role="button"
             aria-label="done"
           >
             完
           </button>
           <button
-            onClick={() => setCategory('notDone')}
+            onClick={() =>
+              dispatch({ type: 'CATEGORYCHANGE', payload: 'notDone' })
+            }
             role="button"
             aria-label="notDone"
           >
@@ -245,28 +253,36 @@ export default function Chapters() {
           <label>並べ替え</label>
           <div className="task-ui-actions">
             <button
-              onClick={() => setSortStatus('default')}
+              onClick={() =>
+                dispatch({ type: 'CAHNGESORTSTATUS', payload: 'default' })
+              }
               role="button"
               aria-label="sortDefault"
             >
               追加順
             </button>
             <button
-              onClick={() => setSortStatus('title')}
+              onClick={() =>
+                dispatch({ type: 'CAHNGESORTSTATUS', payload: 'title' })
+              }
               role="button"
               aria-label="sortTitle"
             >
               タイトル
             </button>
             <button
-              onClick={() => setSortStatus('new')}
+              onClick={() =>
+                dispatch({ type: 'CAHNGESORTSTATUS', payload: 'new' })
+              }
               role="button"
               aria-label="sortNew"
             >
               new
             </button>
             <button
-              onClick={() => setSortStatus('old')}
+              onClick={() =>
+                dispatch({ type: 'CAHNGESORTSTATUS', payload: 'old' })
+              }
               role="button"
               aria-label="sortOld"
             >
@@ -283,7 +299,12 @@ export default function Chapters() {
             id="task-title"
             role="textbox"
             placeholder="ここから、最初の機能をつくろう"
-            onChange={(e) => setUserInputTask(e.target.value.trim())}
+            onChange={(e) =>
+              dispatch({
+                type: 'USERINPUTTASK',
+                payload: e.target.value.trim(),
+              })
+            }
             value={userInputTask}
             aria-invalid={Boolean(errorMessage)}
             aria-label="input"
@@ -325,10 +346,12 @@ export default function Chapters() {
                 aria-label="editInput"
                 placeholder={obj.title}
                 value={userEditInput}
-                onChange={(e) => {
-                  setUserEditInput(e.target.value.trim());
-                  prevEditInputRef.current = userEditInput.trim();
-                }}
+                onChange={(e) =>
+                  dispatch({
+                    type: 'EDITUSERINPUT',
+                    payload: e.target.value.trim(),
+                  })
+                }
               />
               <div
                 style={{
@@ -371,11 +394,7 @@ export default function Chapters() {
               >
                 {obj.isDone ? '✅' : '🔲'}
               </button>
-              {/* <select onChange={(e) => setPriority(e.target.value)}>
-                <option value="low">優先度:低い</option>
-                <option value="medium">優先度:普通</option>
-                <option value="high">優先度:高い</option>
-              </select> */}
+
               <li
                 role="listitem"
                 data-test-id={obj.id}

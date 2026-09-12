@@ -9,7 +9,9 @@ export function createExerciseRouter(prisma = createLocalPrisma()) {
 
   const getAllTaskList: RequestHandler = async (_, response) => {
     try {
-      const taskList = await prisma.task.findMany();
+      const taskList = await prisma.task.findMany({
+        orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
+      });
       return response.json({
         message: 'taskの全件取得に成功しています。',
         taskList,
@@ -91,7 +93,9 @@ export function createExerciseRouter(prisma = createLocalPrisma()) {
           isDone,
         },
       });
-      const newTaskList = await prisma.task.findMany();
+      const newTaskList = await prisma.task.findMany({
+        orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
+      });
 
       return response.json({
         message: 'taskの更新が完了しました。',
@@ -120,7 +124,9 @@ export function createExerciseRouter(prisma = createLocalPrisma()) {
 
       await prisma.task.delete({ where: { id: targetId } });
 
-      const newTaskList = await prisma.task.findMany();
+      const newTaskList = await prisma.task.findMany({
+        orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
+      });
       return response.json({
         message: '対象のtaskの削除が完了しました。',
         newTaskList,

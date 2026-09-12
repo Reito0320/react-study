@@ -1,6 +1,11 @@
-import type { TaskList } from './chapters';
+export type TaskList = {
+  id: string;
+  title: string;
+  isDone: boolean;
+  createdAt: Date;
+};
 
-type Initial = {
+export type Initial = {
   userInputTask: string;
   userEditInput: string;
   searchInput: string;
@@ -9,7 +14,6 @@ type Initial = {
   taskList: TaskList[];
   category: 'all' | 'done' | 'notDone';
   sortStatus: 'default' | 'title' | 'new' | 'old';
-  prevEditInputRef: string;
 };
 
 export const INITIAL: Initial = {
@@ -21,19 +25,40 @@ export const INITIAL: Initial = {
   taskList: [],
   category: 'all',
   sortStatus: 'default',
-  prevEditInputRef: '',
 };
 
-export const reducer = (state, action) => {
+export type Action =
+  | { type: 'ADD'; payload: TaskList }
+  | { type: 'SAVE'; payload: TaskList[] }
+  | { type: 'DELETE'; payload: TaskList[] }
+  | {
+      type: 'CARDCLICK';
+      payload: {
+        title: string;
+        targetId: string;
+      };
+    }
+  | { type: 'CANCEL'; payload: TaskList[] }
+  | { type: 'CHANGETASKLIST'; payload: TaskList[] }
+  | { type: 'SEARCHINPUT'; payload: string }
+  | { type: 'CATEGORYCHANGE'; payload: Initial['category'] }
+  | { type: 'CAHNGESORTSTATUS'; payload: Initial['sortStatus'] }
+  | { type: 'USERINPUTTASK'; payload: string }
+  | { type: 'EDITUSERINPUT'; payload: string }
+  | { type: 'ERROR'; payload: string };
+
+export const reducer = (state: Initial, action: Action): Initial => {
   switch (action.type) {
     case 'ADD':
       return {
-        taskList: action.payload,
+        ...state,
+        taskList: [...state.taskList, action.payload],
         userInputTask: '',
         errorMessage: '',
       };
     case 'SAVE':
       return {
+        ...state,
         taskList: action.payload,
         targetId: '',
         userEditInput: '',
@@ -41,47 +66,58 @@ export const reducer = (state, action) => {
       };
     case 'DELETE':
       return {
+        ...state,
         taskList: action.payload,
         targetId: '',
       };
     case 'CARDCLICK':
       return {
+        ...state,
         userEditInput: action.payload.title,
         targetId: action.payload.targetId,
       };
     case 'CANCEL':
       return {
+        ...state,
         taskList: action.payload,
         targetId: '',
         userEditInput: '',
       };
-    case 'TOGGLE':
+    case 'CHANGETASKLIST':
       return {
+        ...state,
         taskList: action.payload,
       };
-    case 'GETTASKLIST':
-      return {
-        taskList: action.payload,
-      };
+
     case 'SEARCHINPUT':
       return {
+        ...state,
         searchInput: action.payload,
       };
     case 'CATEGORYCHANGE':
       return {
+        ...state,
         category: action.payload,
       };
     case 'CAHNGESORTSTATUS':
       return {
+        ...state,
         sortStatus: action.payload,
       };
     case 'USERINPUTTASK':
       return {
+        ...state,
         userInputTask: action.payload,
       };
-    case 'NOTFOUND':
+    case 'EDITUSERINPUT':
       return {
-        errorMessage: '該当するデータが存在しません。',
+        ...state,
+        userEditInput: action.payload,
+      };
+    case 'ERROR':
+      return {
+        ...state,
+        errorMessage: action.payload,
       };
     default:
       return state;
