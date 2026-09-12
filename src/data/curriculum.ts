@@ -24,7 +24,7 @@ const refs: Record<string, Lesson['reference']> = {
   state: { title: 'useState — UIと状態', explanation: '状態の更新は次の描画につながります。直前の値に依存する更新には関数形式を使います。配列やオブジェクトは新しく作ります。', code: 'const [count, setCount] = useState(0)\n<button onClick={() => setCount(n => n + 1)}>{count}</button>', demo: 'state' },
   effect: { title: 'useEffect — 外部との同期', explanation: 'Effectは通信やタイマーなど外部との同期に使います。表示値の計算だけならレンダー中に行い、不要なEffectを増やしません。終了時は後始末をします。', code: 'useEffect(() => {\n  const timer = setInterval(() => setSeconds(s => s + 1), 1000)\n  return () => clearInterval(timer)\n}, [])', demo: 'effect' },
   ref: { title: 'useRef / useId — 入力を支える', explanation: 'refはDOM参照など描画に使わない値を保持します。refの変更は再描画を起こしません。useIdでラベルと入力を関連付けます。', code: 'const inputRef = useRef<HTMLInputElement>(null)\nconst id = useId()\n<label htmlFor={id}>名前</label>\n<input id={id} ref={inputRef} />\n<button onClick={() => inputRef.current?.focus()}>入力へ</button>', demo: 'ref' },
-  reducer: { title: 'useReducer — 状態遷移を集める', explanation: 'イベントをactionとして表現し、純粋なreducerで次の状態を返します。通信やDOM操作はreducerの外で扱います。', code: 'function reducer(state: number, action: "increment" | "reset") {\n  return action === "reset" ? 0 : state + 1\n}\nconst [count, dispatch] = useReducer(reducer, 0)', demo: 'reducer' },
+  reducer: { title: 'useReducer — 状態遷移を集める', explanation: '追加・編集・削除などの更新処理が各所に散らばったときに使います。actionは操作名と必要なデータ、dispatchはactionを渡す関数、reducerは今の状態とactionから次の状態を返す関数です。更新ルールをまとめて読め、画面なしでテストできます。通信は外で行い、元のstateは変更しません。', code: 'function reducer(state: number, action: "increment" | "reset") {\n  return action === "reset" ? 0 : state + 1\n}\nconst [count, dispatch] = useReducer(reducer, 0)', demo: 'reducer' },
   context: { title: 'useContext — 必要な場所へ届ける', explanation: 'Contextはツリー内で値を共有します。共有範囲を絞り、各コンポーネント固有の状態まで集約しないようにします。', code: 'const ThemeContext = createContext("light")\nfunction Label() {\n  const theme = useContext(ThemeContext)\n  return <span className={theme}>テーマ</span>\n}', demo: 'context' },
   memo: { title: 'useMemo / useCallback — 計測して判断', explanation: '計算結果と関数参照を再利用します。正しさの仕組みではありません。依存配列を正しく指定し、Profilerで改善が確認できる場合に採用します。', code: 'const total = useMemo(() => expensiveSum(values), [values])\nconst onSelect = useCallback((id: string) => {\n  setSelectedId(id)\n}, [])', demo: 'memo' },
   async: { title: '非同期処理 — 中断と状態', explanation: '通信中・成功・失敗を区別します。Effectから取得する場合は後始末で古い通信を中断できます。AbortErrorと本当の失敗を区別しましょう。', code: 'useEffect(() => {\n  const controller = new AbortController()\n  loadPreview(controller.signal).catch(error => {\n    if (error.name !== "AbortError") setError(error.message)\n  })\n  return () => controller.abort()\n}, [])', demo: 'async' },
@@ -83,7 +83,7 @@ export const lessons: Lesson[] = [
   },
   {
     id: 'intermediate-01', level: 'intermediate', title: '状態遷移をreducerに整理', summary: '追加・編集・削除・完了のルールを集約する。', hooks: ['useReducer'], file: workspace,
-    requirements: ['既存のタスク操作をactionとして定義する。', 'reducerは副作用を持たず、入力のstateを変更しない。', '操作の見た目と結果を維持する。'],
+    requirements: ['追加・編集・削除・完了切替を、操作名（type）と必要なデータを持つactionで表す。例：削除なら { type: \'deleted\', id }。', 'タスク配列の更新をreducerにまとめ、useReducerのdispatchからactionを渡す。元のstateを変更せず次のstateを返す。', '通信はreducerの外で行う。API連携中は成功結果をactionで渡し、初期一覧の取得と既存の操作結果を維持する。'],
     checks: ['基礎のすべての操作が同じ結果になる。', '存在しないIDへの操作でも他のタスクは変化しない。'],
     testHints: ['reducerを表形式で検証し、主要操作のUIテストも維持する。', '凍結した入力stateで不変性を検証する。'], reference: refs.reducer,
   },

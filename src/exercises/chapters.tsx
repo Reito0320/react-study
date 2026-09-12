@@ -8,7 +8,7 @@ import { useEffect, useRef, useState } from 'react';
  * UIで確認した後、課題で指定されたテストファイルのit.todoに本文を追記します。
  */
 
-type TaskList = {
+export type TaskList = {
   id: string;
   title: string;
   isDone: boolean;
@@ -18,10 +18,10 @@ type TaskList = {
 export default function Chapters() {
   const [userInputTask, setUserInputTask] = useState<string>('');
   const [userEditInput, setUserEditInput] = useState<string>('');
+  const [searchInput, setSearchInput] = useState<string>('');
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [targetId, setTargetId] = useState<string>();
   const [taskList, setTaskList] = useState<TaskList[]>([]);
-  const [searchInput, setSearchInput] = useState<string>('');
   const [category, setCategory] = useState<'all' | 'done' | 'notDone'>('all');
   // 優先度の入力UIを実装するときに有効にする。
   // const [priority, setPriority] = useState<string>();
@@ -153,12 +153,13 @@ export default function Chapters() {
     setUserEditInput(targetDataTitle);
     setTargetId(currenttargetId);
   };
-  const handleCancelButton = () => {
-    const data = localStorage.getItem('taskList');
-    const localData = data ? JSON.parse(data) : null;
-    if (!localData) return;
+  const handleCancelButton = async () => {
+    const res = await fetch('api/tasks');
+    if (!res.ok) throw new Error('編集をキャンセルできませんでした。');
+    const { taskList } = await res.json();
 
-    setTaskList(localData);
+    if (!taskList) return;
+    setTaskList(taskList);
     setTargetId('');
     setUserEditInput('');
   };
@@ -176,7 +177,6 @@ export default function Chapters() {
         const res = await fetch('/api/tasks');
         if (!res.ok) throw new Error('tasks全件取得の通信に失敗しています。');
         const { taskList } = await res.json();
-        console.log(taskList);
         setTaskList(taskList);
       } catch (error) {
         console.error(error);
@@ -284,14 +284,6 @@ export default function Chapters() {
             role="textbox"
             placeholder="ここから、最初の機能をつくろう"
             onChange={(e) => setUserInputTask(e.target.value.trim())}
-            onFocus={() => {
-              setTaskList((prev) =>
-                prev.map((obj) =>
-                  obj.id === targetId ? { ...obj, title: userEditInput } : obj,
-                ),
-              );
-              setTargetId('');
-            }}
             value={userInputTask}
             aria-invalid={Boolean(errorMessage)}
             aria-label="input"
