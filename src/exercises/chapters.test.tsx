@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import Chapters from './chapters';
 import userEvent from '@testing-library/user-event';
+import { INITIAL, reducer } from './reducer';
 
 // 1. chapters.tsxに機能を実装する。
 // 2. ブラウザで要件どおり動くことを確認する。
@@ -415,14 +416,22 @@ describe('[intermediate-01] 中級1：状態遷移をreducerに整理', () => {
     render(<Chapters />);
   });
   it('[intermediate-01-01] 追加・編集・削除・完了のactionが基礎と同じ結果を返す', async () => {
-    const mainInput = screen.getByRole('textbox', { name: 'input' });
-    const addButton = screen.getByRole('button', { name: 'add' });
+    const task = {
+      id: crypto.randomUUID(),
+      title: 'test',
+      isDone: false,
+      createdAt: new Date(),
+    };
 
-    const user = userEvent.setup();
-    await user.type(mainInput, 'test1');
-    await user.click(addButton);
-    const listItem = await screen.findByRole('listitem');
-    expect(listItem).toHaveTextContent(/^test1$/);
+    const nextState = reducer(INITIAL, {
+      type: 'ADD',
+      payload: task,
+    });
+
+    expect(nextState.taskList).toEqual([task]);
+    expect(INITIAL.taskList).toEqual([]);
+
+    const newTask = {};
   });
   it.todo('[intermediate-01-02] 凍結した入力stateを変更せずに次の状態を返す');
   it.todo(

@@ -88,10 +88,10 @@ export const lessons: Lesson[] = [
     testHints: ['reducerを表形式で検証し、主要操作のUIテストも維持する。', '凍結した入力stateで不変性を検証する。'], reference: refs.reducer,
   },
   {
-    id: 'intermediate-02', level: 'intermediate', title: 'Contextと独自Hookで共有', summary: '一覧とサマリーの共有状態を整理する。', hooks: ['useContext', 'useReducer', 'custom Hook'], file: workspace,
-    requirements: ['一覧と件数サマリーが同じタスク状態を参照する。', 'Providerと利用用Hookでアクセスをまとめる。', '入力途中の文字など局所的な状態は必要な範囲に置く。'],
-    checks: ['一覧で完了を切り替えると離れたサマリーも更新される。', '別のProviderを置いた場合、状態が相互に混ざらない。'],
-    testHints: ['Provider込みのUIテストで共有状態を検証する。', 'Providerがない場合の明確なエラーも検証する。'], reference: refs.context,
+    id: 'intermediate-02', level: 'intermediate', title: 'Contextと独自Hookで共有', summary: '前章のreducerを使う処理をカスタムフックへ切り出し、一覧とサマリーで共有する。', hooks: ['useContext', 'useReducer', 'custom Hook'], file: workspace + ' + src/exercises/useTasks.ts（新規） + src/exercises/TasksProvider.tsx（新規） + src/exercises/reducer.ts',
+    requirements: ['一覧と件数サマリーが同じタスク状態を参照する。', 'Providerと利用用Hookでアクセスをまとめる。', '入力途中の文字など局所的な状態は必要な範囲に置く。', 'chapters.tsx内のuseReducer・初回取得のEffect・API通信とdispatchを行う操作関数をuseTasks.tsへ切り出す。前章のreducerを再利用し、JSXから返り値を使う。'],
+    checks: ['一覧で完了を切り替えると離れたサマリーも更新される。', '別のProviderを置いた場合、状態が相互に混ざらない。', '切り出しの前後で初回取得・追加・編集・削除・完了切替の結果が変わらない。', 'useTasksを別々に呼ぶと状態は独立し、同じProviderを読む場合だけ共有されることを説明できる。'],
+    testHints: ['Provider込みのUIテストで共有状態を検証する。', 'Providerがない場合の明確なエラーも検証する。', '切り出し前後に既存の操作テストを実行する。別ファイルへの移動はコードでも確認する。'], reference: refs.context,
   },
   {
     id: 'intermediate-03', level: 'intermediate', title: '入力とフォーカスを改善', summary: '編集開始や入力エラー時の移動を自然にする。', hooks: ['useRef', 'useId', 'useEffect'], file: workspace,

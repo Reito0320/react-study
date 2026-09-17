@@ -1,11 +1,13 @@
 import PersistenceGuide from './PersistenceGuide'
 import ReducerGuide from './ReducerGuide'
+import CustomHookGuide from './CustomHookGuide'
 import DatabaseSetupGuide from './DatabaseSetupGuide'
 import type { Lesson } from '../data/curriculum'
 
 const stepTitles = ['要件を具体例にする', 'エディタで実装する', 'プレビューで操作する', 'テストを書いて実行する']
 export function NextAction({ lesson, current }: { lesson: Lesson; current: number }) {
   if (lesson.id === 'intermediate-01') return <ReducerGuide current={current} />
+  if (lesson.id === 'intermediate-02') return <CustomHookGuide current={current} />
   if (lesson.id === 'basic-08') return <PersistenceGuide />
   if (lesson.id === 'basic-07' || lesson.id === 'intermediate-07') return <section className="next-action" aria-labelledby="next-action-title">
     <div className="eyebrow">LOCAL DATABASE LAB</div>
